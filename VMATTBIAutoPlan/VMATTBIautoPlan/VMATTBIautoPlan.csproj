@@ -72,14 +72,26 @@
     </Compile>
     <Compile Include="generateTS.cs" />
     <Compile Include="isoNameHelper.cs" />
+    <Compile Include="parseSettings.cs" />
     <Compile Include="placeBeams.cs" />
     <Compile Include="planPrep.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="selectItem.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="selectItem.Designer.cs">
       <DependentUpon>selectItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
     <Compile Include="UI.xaml.cs">
       <DependentUpon>UI.xaml</DependentUpon>
     </Compile>
@@ -98,9 +110,20 @@
     <EmbeddedResource Include="enterMissingInfo.resx">
       <DependentUpon>enterMissingInfo.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="selectItem.resx">
       <DependentUpon>selectItem.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

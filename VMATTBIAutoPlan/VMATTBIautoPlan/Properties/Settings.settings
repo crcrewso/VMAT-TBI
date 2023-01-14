@@ -1,0 +1,54 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VMATTBIautoPlan.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="MRRestartLevel" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MR3</Value>
+    </Setting>
+    <Setting Name="useGPUoptimization" Type="System.String" Scope="User">
+      <Value Profile="(Default)">false</Value>
+    </Setting>
+    <Setting Name="useGPUdose" Type="System.String" Scope="User">
+      <Value Profile="(Default)">false</Value>
+    </Setting>
+    <Setting Name="optimizationModep" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PO_15605</Value>
+    </Setting>
+    <Setting Name="calculationModel" Type="System.String" Scope="User">
+      <Value Profile="(Default)">AA_15605</Value>
+    </Setting>
+    <Setting Name="useFlashByDefault" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="defaultFlashType" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Global</Value>
+    </Setting>
+    <Setting Name="defalutFlashMargin" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0.5</Value>
+    </Setting>
+    <Setting Name="defaultTargetMargin" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0.3</Value>
+    </Setting>
+    <Setting Name="contourOverlap" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="contourFieldOverlapMargin" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1.0</Value>
+    </Setting>
+    <Setting Name="documentationPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="courseId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">VMAT_TBI</Value>
+    </Setting>
+    <Setting Name="checkTTCollision" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="allVMAT" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="extraIsos" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
