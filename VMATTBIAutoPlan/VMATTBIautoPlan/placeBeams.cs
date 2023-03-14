@@ -35,7 +35,7 @@ namespace VMATTBIautoPlan
         //5-5-2020 ask nataliya about importance of matching collimator angles to CW and CCW rotations...
         double[] collRot;
         double[] CW = { 181.0, 179.0 };
-        double[] CCW = {179.0, 181.0 };
+        double[] CCW = { 179.0, 181.0 };
         ExternalBeamMachineParameters ebmpArc;
         //ExternalBeamMachineParameters ebmpArc6X;
         ExternalBeamMachineParameters ebmpStatic;
@@ -116,7 +116,7 @@ namespace VMATTBIautoPlan
             if (contourOverlap) contourFieldOverlap(isoLocations);
             set_beams(isoLocations);
 
-            if (checkIsoPlacement) MessageBox.Show(String.Format("WARNING: < {0:0.00} cm margin at most superior and inferior locations of body! Verify isocenter placement!", checkIsoPlacementLimit/10));
+            if (checkIsoPlacement) MessageBox.Show(String.Format("WARNING: < {0:0.00} cm margin at most superior and inferior locations of body! Verify isocenter placement!", checkIsoPlacementLimit / 10));
             return plan;
         }
 
@@ -150,7 +150,7 @@ namespace VMATTBIautoPlan
             plan.SetPrescription(prescription.Item1, prescription.Item2, 1.0);
             plan.Id = "_VMAT TBI";
             //ask the user to set the calculation model if not calculation model was set in UI.xaml.cs (up near the top with the global parameters)
-            if(calculationModel == "")
+            if (calculationModel == "")
             {
                 IEnumerable<string> models = plan.GetModelsForCalculationType(CalculationType.PhotonVolumeDose);
                 selectItem SUI = new VMATTBIautoPlan.selectItem();
@@ -162,7 +162,7 @@ namespace VMATTBIautoPlan
                 calculationModel = SUI.itemCombo.SelectedItem.ToString();
 
                 //just an FYI that the calculation will likely run out of memory and crash the optimization when Acuros is used
-                if(calculationModel.ToLower().Contains("acuros") || calculationModel.ToLower().Contains("axb"))
+                if (calculationModel.ToLower().Contains("acuros") || calculationModel.ToLower().Contains("axb"))
                 {
                     confirmUI CUI = new VMATTBIautoPlan.confirmUI();
                     CUI.message.Text = "Warning!" + Environment.NewLine + "The optimization will likely crash (i.e., run out of memory) if Acuros is used!" + Environment.NewLine + "Continue?!";
@@ -214,7 +214,7 @@ namespace VMATTBIautoPlan
             VVector userOrigin = image.UserOrigin;
             //if the user requested to add flash to the plan, be sure to grab the ptv_body_flash structure (i.e., the ptv_body structure created from the body with added flash). 
             //This structure is named 'TS_FLASH_TARGET'
-            if(useFlash) target = selectedSS.Structures.FirstOrDefault(x => x.Id.ToLower() == "ts_flash_target");
+            if (useFlash) target = selectedSS.Structures.FirstOrDefault(x => x.Id.ToLower() == "ts_flash_target");
             else target = selectedSS.Structures.FirstOrDefault(x => x.Id.ToLower() == "ptv_body");
 
             //Adapted PR #22 based on iromero77 suggestion (based on Stanford experience)
@@ -238,7 +238,7 @@ namespace VMATTBIautoPlan
                         CUI.button1.Text = "No";
                         CUI.button2.Text = "Yes";
                         CUI.ShowDialog();
-                        if(CUI.confirm) offsetY = TT - 17.5;
+                        if (CUI.confirm) offsetY = TT - 17.5;
                     }
                     offsetY *= 10;
                 }
@@ -250,9 +250,9 @@ namespace VMATTBIautoPlan
             if (selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any() && !selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").IsEmpty)
             {
                 //used to get correct placement of isocenters above and below matchline
-                if(allVMAT) numVMATIsos -= extraIsocenters;
+                if (allVMAT) numVMATIsos -= extraIsocenters;
                 //5-11-2020 update EAS. isoSeparationSup is the isocenter separation for the VMAT isos and isoSeparationInf is the iso separation for the AP/PA isocenters
-                double isoSeparationSup = Math.Round((target.MeshGeometry.Positions.Max(p => p.Z) - selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - 380.0) / (numVMATIsos-1) / 10.0f) * 10.0f;
+                double isoSeparationSup = Math.Round((target.MeshGeometry.Positions.Max(p => p.Z) - selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - 380.0) / (numVMATIsos - 1) / 10.0f) * 10.0f;
                 double isoSeparationInf = Math.Round((selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - target.MeshGeometry.Positions.Min(p => p.Z) - 380.0) / 10.0f) * 10.0f;
                 if (isoSeparationSup > 380.0 || isoSeparationInf > 380.0)
                 {
@@ -371,8 +371,8 @@ namespace VMATTBIautoPlan
             double zResolution = image.ZRes;
             VVector dicomOrigin = image.Origin;
             //center position between adjacent isocenters, number of image slices to contour on, start image slice location for contouring
-            List<Tuple<double,int,int>> overlap = new List<Tuple<double, int, int>> { };
-            
+            List<Tuple<double, int, int>> overlap = new List<Tuple<double, int, int>> { };
+
             //calculate the center position between adjacent isocenters, number of image slices to contour on based on overlap and with additional user-specified margin (from main UI)
             //and the slice where the contouring should begin
             //string output = "";
@@ -414,7 +414,7 @@ namespace VMATTBIautoPlan
 
             //add the contours to each relevant plan for each structure in the jnxs stack
             int count = 0;
-            foreach (Tuple<double,int,int> value in overlap)
+            foreach (Tuple<double, int, int> value in overlap)
             {
                 for (int i = value.Item3; i < (value.Item3 + value.Item2); i++) jnxs.ElementAt(count).AddContourOnImagePlane(pts, i);
                 //only keep the portion of the box contour that overlaps with the target
@@ -453,11 +453,18 @@ namespace VMATTBIautoPlan
                     //zero collimator rotations of two main fields for beams in isocenter immediately superior to matchline. Adjust the third beam such that collimator rotation is 90 degrees. Do not adjust 4th beam
                     double coll = collRot[j];
                     // for allVMAT, if legs are present, last two isos have their collimator positions rotated 180 degrees
-                    if (allVMAT && (numVMATIsos - i )<2)
+                    if (allVMAT && (numVMATIsos - i) < 2)
                     {
+                        // correction so shift doesn't result in unrealistic collimator position
+                        if (coll < 6)
+                            coll += 5;
+                        else if (coll > 354)
+                            coll -= 5;
+                        // rotation of 180 
                         coll = (coll + 180) % 360;
+
                     }
-                        
+
                     if ((numIsos > numVMATIsos) && (i == (numVMATIsos - 1)))
                     {
                         if (j < 2) coll = 0.0;
@@ -492,7 +499,7 @@ namespace VMATTBIautoPlan
             {
                 //6-10-2020 EAS, checked if exisiting _Legs plan is present in createPlan method
                 legs_planUpper = tbi.AddExternalPlanSetup(selectedSS);
-                if(singleAPPAplan) legs_planUpper.Id = String.Format("_Legs");
+                if (singleAPPAplan) legs_planUpper.Id = String.Format("_Legs");
                 else legs_planUpper.Id = String.Format("{0} Upper Legs", numVMATIsos + 1);
                 //100% dose prescribed in plan
                 legs_planUpper.SetPrescription(prescription.Item1, prescription.Item2, 1.0);
@@ -524,7 +531,7 @@ namespace VMATTBIautoPlan
                 b.Id = String.Format("{0} PA Upper Legs", ++count);
                 b.CreateOrReplaceDRR(DRR);
 
-                if((numIsos - numVMATIsos) == 2)
+                if ((numIsos - numVMATIsos) == 2)
                 {
                     VVector infIso = new VVector();
                     //the element at numVMATIsos in isoLocations vector is the first AP/PA isocenter
@@ -545,7 +552,7 @@ namespace VMATTBIautoPlan
                     else if (x2 < 10.0) x2 = 10.0;
 
                     //set MLC positions
-                    MLCpos = new float[2,60];
+                    MLCpos = new float[2, 60];
                     for (int i = 0; i < 60; i++)
                     {
                         MLCpos[0, i] = (float)(x1);
