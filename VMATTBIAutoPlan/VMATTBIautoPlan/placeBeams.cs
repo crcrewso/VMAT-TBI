@@ -453,7 +453,7 @@ namespace VMATTBIautoPlan
                     //zero collimator rotations of two main fields for beams in isocenter immediately superior to matchline. Adjust the third beam such that collimator rotation is 90 degrees. Do not adjust 4th beam
                     double coll = collRot[j];
                     // for allVMAT, if legs are present, last two isos have their collimator positions rotated 180 degrees
-                    if (allVMAT && (numVMATIsos - i) < 2)
+                    if (allVMAT && i > 2) 
                     {
                         // correction so shift doesn't result in unrealistic collimator position
                         if (coll < 6)
