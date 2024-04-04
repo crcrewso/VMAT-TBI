@@ -81,6 +81,8 @@ namespace VMATTBIautoPlan
                 return true;
             }
 
+            /*
+             * Remove the matchplane check
             //check if patient length is > 116cm, if so, check for matchline contour
             if ((pts.Max(p => p.Z) - pts.Min(p => p.Z)) > 1160.0 && !selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any())
             {
@@ -92,14 +94,17 @@ namespace VMATTBIautoPlan
 
                 //checks for LA16 couch and spinning manny couch/bolt will be performed at optimization stage
             }
-
+            */
+            numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
             //calculate number of required isocenters
-            if (!selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any())
+            /* Remove logic for matchline
+             *
+             *if (!selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any())
             {
                 //no matchline implying that this patient will be treated with VMAT only. For these cases the maximum number of allowed isocenters is 3.
                 //the reason for the explicit statements calculating the number of isos and then truncating them to 4 was to account for patients requiring < 4 isos and if, later on, we want to remove the restriction of 4 isos
-                numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
-                if (numIsos > 4) numIsos = numVMATIsos = 4;
+
+//                if (numIsos > 4) numIsos = numVMATIsos = 4;
             }
             else
             {
@@ -113,14 +118,14 @@ namespace VMATTBIautoPlan
 
                     //continue and ignore the empty matchline structure (same calculation as VMAT only)
                     numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
-                    if (numIsos > 4) numIsos = numVMATIsos = 4;
+                    //if (numIsos > 4) numIsos = numVMATIsos = 4;
                 }
                 //matchline structure is present and not empty
                 else
                 {
                     //get number of isos for PTV superior to matchplane (always truncate this value to a maximum of 4 isocenters)
                     numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z) / (400.0 - 20.0));
-                    if (numVMATIsos > 4) numVMATIsos = 4;
+                    //if (numVMATIsos > 4) numVMATIsos = 4;
 
                     //get number of iso for PTV inferior to matchplane
                     //if (selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - pts.Min(p => p.Z) - 3.0 <= (400.0 - 20.0)) numIsos = numVMATIsos + 1;
@@ -133,6 +138,7 @@ namespace VMATTBIautoPlan
                     //MessageBox.Show(String.Format("{0}", selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - pts.Min(p => p.Z) - 3.0));
                 }
             }
+            */
 
             //set isocenter names based on numIsos and numVMATIsos (determined these names from prior cases). Need to implement a more clever way to name the isocenters
             isoNames = new List<string>(new isoNameHelper().getIsoNames(numVMATIsos, numIsos));

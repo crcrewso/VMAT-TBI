@@ -137,7 +137,7 @@ namespace VMATTBIautoPlan
         //default course ID
         string courseId = "VMAT TBI";
         //assign technique as VMAT for all fields
-        bool allVMAT = false;
+        bool allVMAT = true;
         //flag to see if user wants to check for potential couch collision (based on stanford experience)
         bool checkTTCollision = false;
         //used to keep track of how many VMAT isocenters should be inferior to matchline
@@ -592,7 +592,6 @@ namespace VMATTBIautoPlan
             //add the case-specific sparing structures to the temporary list
             if (nonmyelo_chkbox.IsChecked.Value) templateList = new List<Tuple<string, string, double>>(addCaseSpecificSpareStructures(nonmyeloSpareStruct,templateList));
             else if (myelo_chkbox.IsChecked.Value) templateList = new List<Tuple<string, string, double>>(addCaseSpecificSpareStructures(myeloSpareStruct, templateList));
-            else if (sclero_chkbox.IsChecked.Value) templateList = new List<Tuple<string, string, double>>(addCaseSpecificSpareStructures(scleroSpareStruct, templateList));
 
             string missOutput = "";
             string emptyOutput = "";
@@ -615,7 +614,7 @@ namespace VMATTBIautoPlan
                     emptyOutput += String.Format("{0}\n", itr.Item1);
                     emptyCount++;
                 }
-                else defaultList.Add(Tuple.Create((selectedSS.Structures.First(x => x.Id.ToLower() == itr.Item1.ToLower())).Id, itr.Item2, itr.Item3));
+                else defaultList.Add(Tuple.Create(selectedSS.Structures.First(x => x.Id.ToLower() == itr.Item1.ToLower()).Id, itr.Item2, itr.Item3));
             }
 
             clear_spare_list();
@@ -776,8 +775,8 @@ namespace VMATTBIautoPlan
             //The scleroderma trial contouring/margins are specific to the trial, so this trial needs to be handled separately from the generic VMAT treatment type
             VMATTBIautoPlan.generateTS generate;
             //overloaded constructor depending on if the user requested to use flash or not. If so, pass the relevant flash parameters to the generateTS class
-            if (!useFlash) generate = new VMATTBIautoPlan.generateTS(TS_structures, scleroStructures, structureSpareList, selectedSS, targetMargin, sclero_chkbox.IsChecked.Value, allVMAT);
-            else generate = new VMATTBIautoPlan.generateTS(TS_structures, scleroStructures, structureSpareList, selectedSS, targetMargin, sclero_chkbox.IsChecked.Value, allVMAT, useFlash, flashStructure, flashMargin);
+            if (!useFlash) generate = new VMATTBIautoPlan.generateTS(TS_structures, scleroStructures, structureSpareList, selectedSS, targetMargin, false, allVMAT);
+            else generate = new VMATTBIautoPlan.generateTS(TS_structures, scleroStructures, structureSpareList, selectedSS, targetMargin, false, allVMAT, useFlash, flashStructure, flashMargin);
             pi.BeginModifications();
             if (generate.generateStructures()) return;
             //does the structure sparing list need to be updated? This occurs when structures the user elected to spare with option of 'Mean Dose < Rx Dose' are high resolution. Since Eclipse can't perform
@@ -795,7 +794,7 @@ namespace VMATTBIautoPlan
             numIsos = generate.numIsos;
             numVMATIsos = generate.numVMATIsos;
             isoNames = generate.isoNames;
-            if (allVMAT) extraIsos = generate.extraIsos;
+            //if (allVMAT) extraIsos = generate.extraIsos;
 
             //get prescription
             if (double.TryParse(dosePerFx.Text, out double dose_perFx) && int.TryParse(numFx.Text, out int numFractions)) prescription = Tuple.Create(numFractions, new DoseValue(dose_perFx, DoseValue.DoseUnit.cGy));
@@ -835,7 +834,6 @@ namespace VMATTBIautoPlan
 
             BEAMS_SP.Children.Clear();
 
-            numVMATisosTB.Text = numVMATIsos.ToString();
 
             StackPanel sp = new StackPanel();
             sp.Height = 30;
@@ -950,12 +948,14 @@ namespace VMATTBIautoPlan
                 beams_tb.Margin = new Thickness(0, 0, 80, 0);
 
                 if (i >= numVMATIsos) beams_tb.IsReadOnly = true;
-                beams_tb.Text = (beamsPerIso[i]).ToString();
+                beams_tb.Text = beamsPerIso[i].ToString();
                 beams_tb.TextAlignment = TextAlignment.Center;
                 sp.Children.Add(beams_tb);
 
                 BEAMS_SP.Children.Add(sp);
             }
+            numVMATisosTB.Text = numVMATIsos.ToString();
+
         }
 
         private void updateVMATisos_Click(object sender, RoutedEventArgs e)
@@ -1082,7 +1082,6 @@ namespace VMATTBIautoPlan
             //meylo-abalative regime
             else if (myelo_chkbox.IsChecked.Value) tmp = optConstDefaultMyelo;
             //scleroderma trial regiment
-            else if (sclero_chkbox.IsChecked.Value) tmp = optConstDefaultSclero;
             //no treatment template selected => scale optimization objectives by ratio of entered Rx dose to closest template treatment Rx dose
             else if (prescription != null)
             {
@@ -1184,7 +1183,7 @@ namespace VMATTBIautoPlan
         private void scanSS_Click(object sender, RoutedEventArgs e)
         {
             //get prescription
-            if ((double.TryParse(dosePerFx.Text, out double dose_perFx) && int.TryParse(numFx.Text, out int numFractions))) prescription = Tuple.Create(numFractions, new DoseValue(dose_perFx, DoseValue.DoseUnit.cGy));
+            if (double.TryParse(dosePerFx.Text, out double dose_perFx) && int.TryParse(numFx.Text, out int numFractions)) prescription = Tuple.Create(numFractions, new DoseValue(dose_perFx, DoseValue.DoseUnit.cGy));
             else
             {
                 MessageBox.Show("Warning! Entered prescription is not valid! \nSetting number of fractions to 1 and dose per fraction to 0.1 cGy/fraction!");
@@ -1514,7 +1513,7 @@ namespace VMATTBIautoPlan
             if (opt_parameters.Children.Count < 3) clear_optimization_parameter_list();
             else opt_parameters.Children.RemoveAt(k);
         }
-
+        /*
         private void Sclero_chkbox_Checked(object sender, RoutedEventArgs e)
         {
             if (sclero_chkbox.IsChecked.Value)
@@ -1532,16 +1531,16 @@ namespace VMATTBIautoPlan
                 updateUseFlash();
             }
         }
-
+        */
         private void Myelo_chkbox_Checked(object sender, RoutedEventArgs e)
         {
             if (myelo_chkbox.IsChecked.Value)
             {
                 if (nonmyelo_chkbox.IsChecked.Value) nonmyelo_chkbox.IsChecked = false;
-                if (sclero_chkbox.IsChecked.Value) sclero_chkbox.IsChecked = false;
+                // if (sclero_chkbox.IsChecked.Value) sclero_chkbox.IsChecked = false;
                 setPresciptionInfo(myeloDosePerFx, myeloNumFx);
             }
-            else if (!nonmyelo_chkbox.IsChecked.Value && !sclero_chkbox.IsChecked.Value && (dosePerFx.Text == myeloDosePerFx.ToString() && numFx.Text == myeloNumFx.ToString()))
+            else if (!nonmyelo_chkbox.IsChecked.Value && dosePerFx.Text == myeloDosePerFx.ToString() && numFx.Text == myeloNumFx.ToString())
             {
                 dosePerFx.Text = "";
                 numFx.Text = "";
@@ -1555,10 +1554,9 @@ namespace VMATTBIautoPlan
             if (nonmyelo_chkbox.IsChecked.Value)
             {
                 if (myelo_chkbox.IsChecked.Value) myelo_chkbox.IsChecked = false;
-                if (sclero_chkbox.IsChecked.Value) sclero_chkbox.IsChecked = false;
                 setPresciptionInfo(nonmyeloDosePerFx, nonmyeloNumFx);
             }
-            else if (!myelo_chkbox.IsChecked.Value && !sclero_chkbox.IsChecked.Value && (dosePerFx.Text == nonmyeloDosePerFx.ToString() && numFx.Text == nonmyeloNumFx.ToString()))
+            else if (!myelo_chkbox.IsChecked.Value && dosePerFx.Text == nonmyeloDosePerFx.ToString() && numFx.Text == nonmyeloNumFx.ToString())
             {
                 dosePerFx.Text = "";
                 numFx.Text = "";
@@ -1607,7 +1605,6 @@ namespace VMATTBIautoPlan
                 updateUseFlash();
                 if (myelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != myeloDosePerFx * myeloNumFx) myelo_chkbox.IsChecked = false;
                 else if (nonmyelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != nonmyeloDosePerFx * nonmyeloNumFx) nonmyelo_chkbox.IsChecked = false;
-                else if (sclero_chkbox.IsChecked.Value && newNumFx * newDoseFx != scleroDosePerFx * scleroNumFx) sclero_chkbox.IsChecked = false;
             }
         }
 

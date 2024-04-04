@@ -26,7 +26,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Background="White">
         <TabControl Background="DarkGray" HorizontalAlignment="Left" Height="480" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="600">
             <TabItem Header="TS Generation">
                 <StackPanel Name="TS_SP" HorizontalAlignment="Center" Margin="5">
@@ -127,10 +127,8 @@
         </Grid>
 
         <Grid Width="300" Height="92" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="300,77,0,0">
-            <Label Content="Scleroderma trial (Rx = 800 cGy):" HorizontalAlignment="Right" Margin="0,5,50,0" VerticalAlignment="Top"/>
             <Label Content="Non-myeloablative regimen (Rx = 200 cGy):" HorizontalAlignment="Right" Margin="0,35,50,0" VerticalAlignment="Top"/>
             <Label Content="Myeloablative regimen (Rx = 1200 cGy):" HorizontalAlignment="Right" Margin="0,65,50,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="sclero_chkbox" HorizontalAlignment="Right" Margin="0,11,28,0" VerticalAlignment="Top" Checked="Sclero_chkbox_Checked" Unchecked="Sclero_chkbox_Checked"/>
             <CheckBox x:Name="nonmyelo_chkbox" HorizontalAlignment="Right" Margin="0,41,28,0" VerticalAlignment="Top" Checked="nonMyelo_chkbox_Checked" Unchecked="nonMyelo_chkbox_Checked"/>
             <CheckBox x:Name="myelo_chkbox" HorizontalAlignment="Right" Margin="0,71,28,0" VerticalAlignment="Top" Checked="Myelo_chkbox_Checked" Unchecked="Myelo_chkbox_Checked"/>
         </Grid>

@@ -18,7 +18,7 @@ namespace VMATTBIautoPlan
         int[] numBeams;
         public List<string> isoNames;
         bool checkIsoPlacement = false;
-        double checkIsoPlacementLimit = 5.0;
+        double checkIsoPlacementLimit = 4.99; //TODO: Hack, possible rounding error when fixing outer isos. 
         double isoSeparation = 0;
         bool allVMAT = false;
         bool checkTTCollision = false;
@@ -220,6 +220,8 @@ namespace VMATTBIautoPlan
             //Adapted PR #22 based on iromero77 suggestion (based on Stanford experience)
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             double offsetY = 0.0;
+            
+            /* Remove collision check
             if (checkTTCollision)
             {
                 //same search as used in planPrep class
@@ -244,6 +246,8 @@ namespace VMATTBIautoPlan
                 }
                 else MessageBox.Show("Warning! No couch surface structure found! Can't perform collision check!");
             }
+            */
+
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //matchline is present and not empty
@@ -350,7 +354,7 @@ namespace VMATTBIautoPlan
             VVector lastIso = iso.Last();
             if (!(firstIso.z + 200.0 - target.MeshGeometry.Positions.Max(p => p.Z) >= checkIsoPlacementLimit) ||
                 !(target.MeshGeometry.Positions.Min(p => p.Z) - (lastIso.z - 200.0) >= checkIsoPlacementLimit)) checkIsoPlacement = true;
-
+            // TODO: This is a hack to test for outer iso positions but those are set manually 
             //MessageBox.Show(String.Format("{0}, {1}, {2}, {3}, {4}, {5}",
             //    firstIso.z,
             //    lastIso.z,
