@@ -10,9 +10,9 @@ using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 
 // TODO: Replace the following version attributes by creating AssemblyInfo.cs. You can do this in the properties of the Visual Studio project.
-[assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: AssemblyInformationalVersion("1.0")]
+[assembly: AssemblyVersion("2.2.*")]
+[assembly: AssemblyFileVersion("2.2.0.0")]
+[assembly: AssemblyInformationalVersion("2.2")]
 
 // TODO: Uncomment the following line if the script requires write access.
  [assembly: ESAPIScript(IsWriteable = true)]

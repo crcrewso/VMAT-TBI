@@ -146,7 +146,7 @@ namespace VMATTBIautoPlan
         List<string> linacs = new List<string> { "LA16", "LA17" };
         List<string> beamEnergies = new List<string> { "6X", "10X" };
         //default number of beams per isocenter from head to toe
-        int[] beamsPerIso = { 4, 3, 2, 2, 2, 2 };
+        int[] beamsPerIso = { 3, 4, 4, 2, 2, 2 };
         //collimator rotations for how to orient the beams (placeBeams class)
         double[] collRot = { 3.0, 357.0, 87.0, 93.0 };
         //jaw positions of the placed VMAT beams
@@ -916,7 +916,7 @@ namespace VMATTBIautoPlan
             BEAMS_SP.Children.Add(sp);
 
             //subtract a beam from the first isocenter (head) if the user is NOT interested in sparing the brain
-            if (!optParameters.Where(x => x.Item1.ToLower().Contains("brain")).Any()) beamsPerIso[0]--;
+            //if (!optParameters.Where(x => (x.Item1.ToLower().Contains("brain") || x.Item1.ToLower().Contains("head"))).Any()) beamsPerIso[0]--;
             //subtract a beam from the second isocenter (chest/abdomen area) if the user is NOT interested in sparing the kidneys
             //if (!optParameters.Where(x => x.Item1.ToLower().Contains("kidneys")).Any()) beamsPerIso[1]--;
 
