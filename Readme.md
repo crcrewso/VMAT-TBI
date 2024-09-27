@@ -1,3 +1,13 @@
+# Breaking from Upstream
+
+## 2024-09-26
+
+Version 3 will be focused on simplification of VMAT only plans with added features and simplifications. The focus will be for adult patients and patients with taller or wider frames, this differs from the previous pediatric focus. 
+
+
+
+
+
 
 # *Attention!!*
 

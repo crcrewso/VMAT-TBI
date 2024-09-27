@@ -1,0 +1,3 @@
+pydicom
+gooey
+auto-py-to-exe
