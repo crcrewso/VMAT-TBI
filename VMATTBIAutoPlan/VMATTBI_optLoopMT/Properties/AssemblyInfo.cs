@@ -39,6 +39,8 @@ using System.Windows;
                                               //(used if a resource is not found in the page,
                                               // app, or any theme specific resource dictionaries)
 )]
+[assembly: AssemblyVersion("1.8")]
+[assembly: AssemblyFileVersion("1.8")]
 
 
 // Version information for an assembly consists of the following four values:
