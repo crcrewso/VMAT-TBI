@@ -2,7 +2,7 @@
 
 Source [CodingFleet](https://codingfleet.com/code-converter/matlab/python/)
 
-Header 
+Header
 
 ```Matlab
 clear all;

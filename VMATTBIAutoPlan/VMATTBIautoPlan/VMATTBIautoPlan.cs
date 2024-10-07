@@ -9,20 +9,16 @@ using System.Runtime.CompilerServices;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 
-// TODO: Replace the following version attributes by creating AssemblyInfo.cs. You can do this in the properties of the Visual Studio project.
-[assembly: AssemblyVersion("2.2.*")]
-[assembly: AssemblyFileVersion("2.2.0.0")]
-[assembly: AssemblyInformationalVersion("2.2")]
 
-// TODO: Uncomment the following line if the script requires write access.
- [assembly: ESAPIScript(IsWriteable = true)]
+
+[assembly: ESAPIScript(IsWriteable = true)]
 
 namespace VMS.TPS
 {
     public class Script
     {
         public static ScriptContext context = null;
-        public Script(){}
+        public Script() { }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Execute(ScriptContext c/*, System.Windows.Window w, ScriptEnvironment environment*/)
@@ -42,6 +38,6 @@ namespace VMS.TPS
         }
 
         public static ScriptContext GetScriptContext()
-        { return context;}
+        { return context; }
     }
 }

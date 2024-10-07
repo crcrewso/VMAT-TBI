@@ -72,6 +72,7 @@
     <Compile Include="isoNameHelper.cs" />
     <Compile Include="placeBeams.cs" />
     <Compile Include="planPrep.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="selectItem.cs">
       <SubType>Form</SubType>
     </Compile>
