@@ -94,3 +94,9 @@ Here's how the code has been converted:
 1. The swapAngle variable is assigned the value of ControlPoints[CPList[CPcount-j-1]].GantryAngle, as the indexing in Python starts from 0.
 1. The assignment of RPmodified.BeamSequence[i].ControlPointSequence[CPList[j]].GantryAngle has been updated to use the new swapAngle value.
 1. The error function has been replaced with a ValueError exception.
+
+## References
+
+[Github Project Notes](https://github.com/chriskiehl/Gooey/blob/master/docs/packaging/Packaging-Gooey.md)
+
+[Starting Point](https://chriskiehl.com/article/packaging-gooey-with-pyinstaller)
