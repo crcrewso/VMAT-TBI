@@ -4,14 +4,3 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 
-using System.Windows;
-
-namespace VMATTBI_optLoopMT
-{
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-    }
-}

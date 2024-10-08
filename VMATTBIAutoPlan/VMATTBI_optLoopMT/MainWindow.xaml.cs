@@ -7,7 +7,6 @@ using System.IO;
 using Microsoft.Win32;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
-using System.Reflection;
 using VMATTBIautoPlan;
 
 
@@ -25,7 +24,7 @@ namespace VMATTBI_optLoop
         /// ADJUST THESE PARAMETERS TO YOUR TASTE
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //configuration file
-        string configFile = "";
+        string configFile = ""; // TODO: Switch to yaml config file
         //point this to the directory holding the documentation files
         string documentationPath = @"\\enterprise.stanfordmed.org\depts\RadiationTherapy\Public\Users\ESimiele\Research\VMAT_TBI\documentation\";
         //default number of optimizations to perform
@@ -39,9 +38,9 @@ namespace VMATTBI_optLoop
         //copy and save each optimized plan
         bool copyAndSaveOption = false;
         //is demo
-        bool demo = false;
+        bool demo = false; // TODO: Strip out Demo features
         //check for spinning manny couch
-        bool checkSpinningManny = true;
+        bool checkSpinningManny = true; // TODO: Strip out Spinning Manny feature
         //log file directory
         string logFilePath = @"\\enterprise.stanfordmed.org\depts\RadiationTherapy\Public\Users\ESimiele\Research\VMAT_TBI\log_files";
         //decision threshold
@@ -91,7 +90,9 @@ namespace VMATTBI_optLoop
         };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#pragma warning disable IDE0044 // Add readonly modifier
         VMS.TPS.Common.Model.API.Application app = null;
+#pragma warning restore IDE0044 // Add readonly modifier
         Patient pi = null;
         bool firstOptStruct = true;
         int clearOptBtnCounter = 0;
@@ -109,9 +110,15 @@ namespace VMATTBI_optLoop
             catch (Exception except) { MessageBox.Show(String.Format("Warning! Could not generate Aria application instance because: {0}", except.Message)); }
             if (File.Exists(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\configuration\\VMAT_TBI_config.ini"))
             {
-                if (!LoadConfigurationSettings(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\configuration\\VMAT_TBI_config.ini")) DisplayConfigurationParameters();
+                if (!LoadConfigurationSettings(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\configuration\\VMAT_TBI_config.ini"))
+                {
+                    DisplayConfigurationParameters();
+                }
             }
-            else MessageBox.Show("No configuration file found! Loading default settings!");
+            else
+            {
+                MessageBox.Show("No configuration file found! Loading default settings!");
+            }
         }
 
         private void Help_Click(object sender, RoutedEventArgs e)
@@ -128,8 +135,15 @@ namespace VMATTBI_optLoop
         {
             configTB.Text = "";
             configTB.Text = String.Format("{0}", DateTime.Now.ToString()) + System.Environment.NewLine;
-            if (configFile != "") configTB.Text += String.Format("Configuration file: {0}", configFile) + System.Environment.NewLine + System.Environment.NewLine;
-            else configTB.Text += String.Format("Configuration file: none") + System.Environment.NewLine + System.Environment.NewLine;
+            if (configFile != "")
+            {
+                configTB.Text += String.Format("Configuration file: {0}", configFile) + System.Environment.NewLine + System.Environment.NewLine;
+            }
+            else
+            {
+                configTB.Text += String.Format("Configuration file: none") + System.Environment.NewLine + System.Environment.NewLine;
+            }
+
             configTB.Text += String.Format("Documentation path: {0}", documentationPath) + System.Environment.NewLine + System.Environment.NewLine;
             configTB.Text += String.Format("Log file path: {0}", logFilePath) + System.Environment.NewLine + System.Environment.NewLine;
             configTB.Text += String.Format("Default run parameters:") + System.Environment.NewLine;
@@ -147,22 +161,37 @@ namespace VMATTBI_optLoop
             if (supportStructureIds.Any())
             {
                 configTB.Text += String.Format(" {0, -15} |", "structure Id") + System.Environment.NewLine;
-                foreach (string itr in supportStructureIds) configTB.Text += String.Format(" {0}", itr) + Environment.NewLine;
+                foreach (string itr in supportStructureIds)
+                {
+                    configTB.Text += String.Format(" {0}", itr) + Environment.NewLine;
+                }
             }
-            else configTB.Text += " None added!" + Environment.NewLine;
+            else
+            {
+                configTB.Text += " None added!" + Environment.NewLine;
+            }
+
             configTB.Text += System.Environment.NewLine;
 
             configTB.Text += "---------------------------------------------------------------------------" + System.Environment.NewLine;
             configTB.Text += String.Format("Scleroderma trial plan objectives:") + System.Environment.NewLine;
             configTB.Text += String.Format(" {0, -15} | {1, -16} | {2, -10} | {3, -10} | {4, -9} |", "structure Id", "constraint type", "dose", "volume (%)", "dose type") + System.Environment.NewLine;
-            foreach (Tuple<string, string, double, double, DoseValuePresentation> itr in planObjSclero) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-9} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
+            foreach (Tuple<string, string, double, double, DoseValuePresentation> itr in planObjSclero)
+            {
+                configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-9} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
+            }
+
             configTB.Text += System.Environment.NewLine;
             configTB.Text += System.Environment.NewLine;
 
             configTB.Text += "---------------------------------------------------------------------------" + System.Environment.NewLine;
             configTB.Text += String.Format("General plan objectives:") + System.Environment.NewLine;
             configTB.Text += String.Format(" {0, -15} | {1, -16} | {2, -10} | {3, -10} | {4, -9} |", "structure Id", "constraint type", "dose", "volume (%)", "dose type") + System.Environment.NewLine;
-            foreach (Tuple<string, string, double, double, DoseValuePresentation> itr in planObjGeneral) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-9} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
+            foreach (Tuple<string, string, double, double, DoseValuePresentation> itr in planObjGeneral)
+            {
+                configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-9} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
+            }
+
             configTB.Text += System.Environment.NewLine;
             
             configTB.Text += "---------------------------------------------------------------------------" + System.Environment.NewLine;
@@ -171,7 +200,10 @@ namespace VMATTBI_optLoop
             foreach (Tuple<string, double,double,double,int,List<Tuple<string,double,string,double>>> itr in requestedTSstructures)
             {
                 configTB.Text += String.Format(" {0, -15} | {1, -9:N1} | {2,-10:N1} | {3,-5:N1} | {4,-8} |", itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
-                if (!itr.Item6.Any()) configTB.Text += String.Format(" {0,-10} |", "none") + System.Environment.NewLine;
+                if (!itr.Item6.Any())
+                {
+                    configTB.Text += String.Format(" {0,-10} |", "none") + System.Environment.NewLine;
+                }
                 else 
                 {
                     int count = 0;
@@ -179,15 +211,33 @@ namespace VMATTBI_optLoop
                     {
                         if (count == 0)
                         {
-                            if (itr1.Item1.Contains("Dmax")) configTB.Text += String.Format(" {0,-10} |", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                            else if(itr1.Item1.Contains("V")) configTB.Text += String.Format(" {0,-10} |", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                            else configTB.Text += String.Format(" {0,-10} |", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                            if (itr1.Item1.Contains("Dmax"))
+                            {
+                                configTB.Text += String.Format(" {0,-10} |", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                            }
+                            else if(itr1.Item1.Contains("V"))
+                            {
+                                configTB.Text += String.Format(" {0,-10} |", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                            }
+                            else
+                            {
+                                configTB.Text += String.Format(" {0,-10} |", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                            }
                         }
                         else
                         {
-                            if (itr1.Item1.Contains("Dmax")) configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                            else if (itr1.Item1.Contains("V")) configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                            else configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                            if (itr1.Item1.Contains("Dmax"))
+                            {
+                                configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                            }
+                            else if (itr1.Item1.Contains("V"))
+                            {
+                                configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                            }
+                            else
+                            {
+                                configTB.Text += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                            }
                         }
                         count++;
                     }
@@ -203,7 +253,10 @@ namespace VMATTBI_optLoop
 
         private void OpenPatient_Click(object sender, RoutedEventArgs e)
         {
-            if (app == null) return;
+            if (app == null)
+            {
+                return;
+            }
             //open the patient with the user-entered MRN number
             string pat_mrn = MRN.Text;
             ClearEverything();
@@ -247,7 +300,10 @@ namespace VMATTBI_optLoop
             numFx.Text = plan.NumberOfFractions.ToString();
             Rx.Text = plan.TotalDose.Dose.ToString();
             //if the dose per fraction and number of fractions equal 200 cGy and 4, respectively, then this is a scleroderma trial patient. This information will be passed to the optimization loop
-            if (plan.DosePerFraction.Dose == 200.0 && plan.NumberOfFractions == 4) scleroTrial = true;
+            if (plan.DosePerFraction.Dose == 200.0 && plan.NumberOfFractions == 4)
+            {
+                scleroTrial = true;
+            }
         }
 
         private void PopulateOptimizationTab(ExternalPlanSetup plan)
@@ -278,19 +334,33 @@ namespace VMATTBI_optLoop
 
             //clear the current list of optimization constraints and ones obtained from the plan to the user
             ClearAllOptimizationStructs();
-            if (obj.Count() > 0) Add_opt_volumes(plan.StructureSet, defaultList);
+            if (obj.Count() > 0)
+            {
+                Add_opt_volumes(plan.StructureSet, defaultList);
+            }
         }
 
         private void GetOptFromPlan_Click(object sender, RoutedEventArgs e)
         {
-            if (app == null) return;
-            if (VMATTBIPlan == null) return;
+            if (app == null)
+            {
+                return;
+            }
+
+            if (VMATTBIPlan == null)
+            {
+                return;
+            }
+
             PopulateOptimizationTab(VMATTBIPlan);
         }
 
         private void StartOpt_Click(object sender, RoutedEventArgs e)
         {
-            if (app == null) return;
+            if (app == null)
+            {
+                return;
+            }
             //start the optimization loop
             //checks
             if (opt_parameters.Children.Count == 0)
@@ -304,9 +374,12 @@ namespace VMATTBI_optLoop
                 return;
             }
             //get an instnace of the VMAT TBI plan
-            if (VMATTBIPlan == null) return;
+            if (VMATTBIPlan == null)
+            {
+                return;
+            }
 
-            if(!double.TryParse(targetNormTB.Text, out double planNorm))
+            if (!double.TryParse(targetNormTB.Text, out double planNorm))
             {
                 MessageBox.Show("Error! Target normalization is NaN \nFix and try again.");
                 return;
@@ -341,15 +414,27 @@ namespace VMATTBI_optLoop
                                 structure = (obj1 as ComboBox).SelectedItem.ToString();
                                 firstCombo = false;
                             }
-                            else constraintType = (obj1 as ComboBox).SelectedItem.ToString();
+                            else
+                            {
+                                constraintType = (obj1 as ComboBox).SelectedItem.ToString();
+                            }
                         }
                         else if (obj1.GetType() == typeof(TextBox))
                         {
                             if (!string.IsNullOrWhiteSpace((obj1 as TextBox).Text))
                             {
-                                if (txtbxNum == 1) double.TryParse((obj1 as TextBox).Text, out vol);
-                                else if (txtbxNum == 2) double.TryParse((obj1 as TextBox).Text, out dose);
-                                else int.TryParse((obj1 as TextBox).Text, out priority);
+                                if (txtbxNum == 1)
+                                {
+                                    double.TryParse((obj1 as TextBox).Text, out vol);
+                                }
+                                else if (txtbxNum == 2)
+                                {
+                                    double.TryParse((obj1 as TextBox).Text, out dose);
+                                }
+                                else
+                                {
+                                    int.TryParse((obj1 as TextBox).Text, out priority);
+                                }
                             }
                             txtbxNum++;
                         }
@@ -364,17 +449,27 @@ namespace VMATTBI_optLoop
                         MessageBox.Show("Error! \nDose, volume, or priority values are invalid! \nEnter new values and try again");
                         return;
                     }
-                    else optParametersList.Add(Tuple.Create(structure, constraintType, dose, vol, priority));
+                    else
+                    {
+                        optParametersList.Add(Tuple.Create(structure, constraintType, dose, vol, priority));
+                    }
+
                     firstCombo = true;
                     txtbxNum = 1;
                     dose = -1.0;
                     vol = -1.0;
                     priority = -1;
                 }
-                else headerObj = false;
+                else
+                {
+                    headerObj = false;
+                }
             }
 
-            if (optParametersList.Where(x => x.Item1.ToLower().Contains("flash")).Any()) useFlash = true;
+            if (optParametersList.Where(x => x.Item1.ToLower().Contains("flash")).Any())
+            {
+                useFlash = true;
+            }
 
             //does the user want to run the initial dose coverage check?
             runCoverageCheck = runCoverageCk.IsChecked.Value;
@@ -388,28 +483,38 @@ namespace VMATTBI_optLoop
 
             //start the optimization loop (all saving to the database is performed in the progressWindow class)
             pi.BeginModifications();
-            optimizationLoop optLoop = new optimizationLoop(VMATTBIPlan, optParametersList, planObj, requestedTSstructures, planNorm, numOptimizations, runCoverageCheck, runOneMoreOpt, copyAndSavePlanItr, useFlash, threshold, lowDoseLimit, demo, supportStructureIds, checkSpinningManny, logFilePath, app);
+            OptimizationLoop optLoop = new OptimizationLoop(VMATTBIPlan, optParametersList, planObj, requestedTSstructures, planNorm, numOptimizations, runCoverageCheck, runOneMoreOpt, copyAndSavePlanItr, useFlash, threshold, lowDoseLimit, demo, supportStructureIds, checkSpinningManny, logFilePath, app);
         }
 
         private void ConstructPlanObjectives()
         {
-            List<Tuple<string, string, double, double, DoseValuePresentation>> temp = new List<Tuple<string, string, double, double, DoseValuePresentation>> { };
-            if (scleroTrial) temp = planObjSclero;
-            else temp = planObjGeneral;
-            foreach(Tuple<string,string,double,double,DoseValuePresentation> obj in temp)
+            List<Tuple<string, string, double, double, DoseValuePresentation>> temp = scleroTrial ? planObjSclero : planObjGeneral;
+            foreach (Tuple<string,string,double,double,DoseValuePresentation> obj in temp)
             {
                 if(obj.Item1 == "<targetId>")
                 {
-                    if(useFlash) planObj.Add(Tuple.Create("TS_PTV_FLASH", obj.Item2, obj.Item3, obj.Item4, obj.Item5)); 
-                    else planObj.Add(Tuple.Create("TS_PTV_VMAT", obj.Item2, obj.Item3, obj.Item4, obj.Item5)); 
+                    if(useFlash)
+                    {
+                        planObj.Add(Tuple.Create("TS_PTV_FLASH", obj.Item2, obj.Item3, obj.Item4, obj.Item5));
+                    }
+                    else
+                    {
+                        planObj.Add(Tuple.Create("TS_PTV_VMAT", obj.Item2, obj.Item3, obj.Item4, obj.Item5));
+                    }
                 }
-                else planObj.Add(Tuple.Create(obj.Item1, obj.Item2, obj.Item3, obj.Item4, obj.Item5));
+                else
+                {
+                    planObj.Add(Tuple.Create(obj.Item1, obj.Item2, obj.Item3, obj.Item4, obj.Item5));
+                }
             }
         }
 
         private void Add_constraint_Click(object sender, RoutedEventArgs e)
         {
-            if (app == null) return;
+            if (app == null)
+            {
+                return;
+            }
             //add a blank contraint to the list
             if (VMATTBIPlan != null)
             {
@@ -423,25 +528,45 @@ namespace VMATTBI_optLoop
             List<ExternalPlanSetup> plans = new List<ExternalPlanSetup> { };
             ExternalPlanSetup thePlan = null;
             //grab an instance of the VMAT TBI plan. Return null if it isn't found
-            if (pi == null) return null;
+            if (pi == null)
+            {
+                return null;
+            }
+
             List<Course> courses = pi.Courses.ToList();
-            if (!courses.Any()) MessageBox.Show("No courses attached to patient!");
+            if (!courses.Any())
+            {
+                MessageBox.Show("No courses attached to patient!");
+            }
             else
             {
                 //look for plan with Id = '_VMAT TBI'
                 plans = courses.SelectMany(x => x.ExternalPlanSetups).Where(x => x.Id.ToLower() == "_vmat tbi").ToList();
-                if (!plans.Any()) MessageBox.Show("No plans named _VMAT TBI in any course!");
+                if (!plans.Any())
+                {
+                    MessageBox.Show("No plans named _VMAT TBI in any course!");
+                }
                 else if (plans.Count > 1)
                 {
                     //do something
                     selectItem selectCourse = new selectItem();
                     selectCourse.title.Text = "Multiple plans named '_VMAT TBI' found!\nPlease select a course!";
-                    foreach (ExternalPlanSetup itr in plans) selectCourse.itemCombo.Items.Add(itr.Course.Id);
+                    foreach (ExternalPlanSetup itr in plans)
+                    {
+                        selectCourse.itemCombo.Items.Add(itr.Course.Id);
+                    }
+
                     selectCourse.itemCombo.SelectedIndex = 0;
                     selectCourse.ShowDialog();
-                    if (selectCourse.confirm) thePlan = plans.FirstOrDefault(x => x.Course.Id == selectCourse.itemCombo.SelectedItem.ToString());
+                    if (selectCourse.confirm)
+                    {
+                        thePlan = plans.FirstOrDefault(x => x.Course.Id == selectCourse.itemCombo.SelectedItem.ToString());
+                    }
                 }
-                else thePlan = plans.First();
+                else
+                {
+                    thePlan = plans.First();
+                }
             }
             return thePlan;
         }
@@ -520,7 +645,11 @@ namespace VMATTBI_optLoop
         private void Add_opt_volumes(StructureSet selectedSS, List<Tuple<string, string, double, double, int>> defaultList)
         {
             //same code from binary plug in
-            if (firstOptStruct) Add_opt_header();
+            if (firstOptStruct)
+            {
+                Add_opt_header();
+            }
+
             for (int i = 0; i < defaultList.Count; i++)
             {
                 StackPanel sp = new StackPanel
@@ -549,7 +678,11 @@ namespace VMATTBI_optLoop
                 foreach (Structure s in selectedSS.Structures)
                 {
                     opt_str_cb.Items.Add(s.Id);
-                    if (s.Id.ToLower() == defaultList[i].Item1.ToLower()) index = j;
+                    if (s.Id.ToLower() == defaultList[i].Item1.ToLower())
+                    {
+                        index = j;
+                    }
+
                     j++;
                 }
                 opt_str_cb.SelectedIndex = index;
@@ -566,7 +699,11 @@ namespace VMATTBI_optLoop
                     Margin = new Thickness(5, 5, 0, 0)
                 };
                 string[] types = new string[] { "--select--", "Upper", "Lower", "Mean", "Exact" };
-                foreach (string s in types) constraint_cb.Items.Add(s);
+                foreach (string s in types)
+                {
+                    constraint_cb.Items.Add(s);
+                }
+
                 constraint_cb.Text = defaultList[i].Item2;
                 constraint_cb.HorizontalContentAlignment = HorizontalAlignment.Center;
                 sp.Children.Add(constraint_cb);
@@ -635,7 +772,15 @@ namespace VMATTBI_optLoop
                 Filter = "ini files (*.ini)|*.ini|All files (*.*)|*.*"
             };
 
-            if (openFileDialog.ShowDialog().Value) { if (!LoadConfigurationSettings(openFileDialog.FileName)) { if (pi != null) DisplayConfigurationParameters(); } else MessageBox.Show("Error! Selected file is NOT valid!"); }
+            if (openFileDialog.ShowDialog().Value) { if (!LoadConfigurationSettings(openFileDialog.FileName)) { if (pi != null)
+                    {
+                        DisplayConfigurationParameters();
+                    }
+                } else
+                {
+                    MessageBox.Show("Error! Selected file is NOT valid!");
+                }
+            }
         }
 
         private bool LoadConfigurationSettings(string file)
@@ -668,40 +813,105 @@ namespace VMATTBI_optLoop
                                             string value = line.Substring(line.IndexOf("=") + 1, line.Length - line.IndexOf("=") - 1);
                                             if (double.TryParse(value, out double result))
                                             {
-                                                if (parameter == "default number of optimizations") defautlNumOpt = value;
-                                                else if (parameter == "default plan normalization") defaultPlanNorm = value;
-                                                else if (parameter == "decision threshold") threshold = result;
-                                                else if (parameter == "relative lower dose limit") lowDoseLimit = result;
+                                                if (parameter == "default number of optimizations")
+                                                {
+                                                    defautlNumOpt = value;
+                                                }
+                                                else if (parameter == "default plan normalization")
+                                                {
+                                                    defaultPlanNorm = value;
+                                                }
+                                                else if (parameter == "decision threshold")
+                                                {
+                                                    threshold = result;
+                                                }
+                                                else if (parameter == "relative lower dose limit")
+                                                {
+                                                    lowDoseLimit = result;
+                                                }
                                             }
                                             else if (parameter == "documentation path")
                                             {
                                                 documentationPath = value;
-                                                if (documentationPath.LastIndexOf("\\") != documentationPath.Length - 1) documentationPath += "\\";
+                                                if (documentationPath.LastIndexOf("\\") != documentationPath.Length - 1)
+                                                {
+                                                    documentationPath += "\\";
+                                                }
                                             }
                                             else if (parameter == "log file path")
                                             {
                                                 logFilePath = value;
-                                                if (logFilePath.LastIndexOf("\\") != logFilePath.Length - 1) logFilePath += "\\";
+                                                if (logFilePath.LastIndexOf("\\") != logFilePath.Length - 1)
+                                                {
+                                                    logFilePath += "\\";
+                                                }
                                             }
-                                            else if (parameter == "demo") { if (value != "") demo = bool.Parse(value); }
-                                            else if (parameter == "check for spinning manny") { if (value != "") checkSpinningManny = bool.Parse(value); }
-                                            else if (parameter == "run coverage check") { if (value != "") runCoverageCheckOption = bool.Parse(value); }
-                                            else if (parameter == "run additional optimization") { if (value != "") runAdditionalOptOption = bool.Parse(value); }
-                                            else if (parameter == "copy and save each plan") { if (value != "") copyAndSaveOption = bool.Parse(value); }
+                                            else if (parameter == "demo") { if (value != "")
+                                                {
+                                                    demo = bool.Parse(value);
+                                                }
+                                            }
+                                            else if (parameter == "check for spinning manny") { if (value != "")
+                                                {
+                                                    checkSpinningManny = bool.Parse(value);
+                                                }
+                                            }
+                                            else if (parameter == "run coverage check") { if (value != "")
+                                                {
+                                                    runCoverageCheckOption = bool.Parse(value);
+                                                }
+                                            }
+                                            else if (parameter == "run additional optimization") { if (value != "")
+                                                {
+                                                    runAdditionalOptOption = bool.Parse(value);
+                                                }
+                                            }
+                                            else if (parameter == "copy and save each plan") { if (value != "")
+                                                {
+                                                    copyAndSaveOption = bool.Parse(value);
+                                                }
+                                            }
                                         }
-                                        else if (line.Contains("add support structure Id")) supportStructureIds_temp.Add(ParseSupportStructureId(line));
-                                        else if (line.Contains("add scleroderma plan objective")) planObjSclero_temp.Add(ParsePlanObjective(line));
-                                        else if (line.Contains("add plan objective")) planObjGeneral_temp.Add(ParsePlanObjective(line));
-                                        else if (line.Contains("add TS structure")) requestedTSstructures_temp.Add(ParseTSstructure(line));
+                                        else if (line.Contains("add support structure Id"))
+                                        {
+                                            supportStructureIds_temp.Add(ParseSupportStructureId(line));
+                                        }
+                                        else if (line.Contains("add scleroderma plan objective"))
+                                        {
+                                            planObjSclero_temp.Add(ParsePlanObjective(line));
+                                        }
+                                        else if (line.Contains("add plan objective"))
+                                        {
+                                            planObjGeneral_temp.Add(ParsePlanObjective(line));
+                                        }
+                                        else if (line.Contains("add TS structure"))
+                                        {
+                                            requestedTSstructures_temp.Add(ParseTSstructure(line));
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    if (supportStructureIds_temp.Any()) supportStructureIds = supportStructureIds_temp;
-                    if (planObjSclero_temp.Any()) planObjSclero = planObjSclero_temp;
-                    if (planObjGeneral_temp.Any()) planObjGeneral = planObjGeneral_temp;
-                    if (requestedTSstructures_temp.Any()) requestedTSstructures = requestedTSstructures_temp;
+                    if (supportStructureIds_temp.Any())
+                    {
+                        supportStructureIds = supportStructureIds_temp;
+                    }
+
+                    if (planObjSclero_temp.Any())
+                    {
+                        planObjSclero = planObjSclero_temp;
+                    }
+
+                    if (planObjGeneral_temp.Any())
+                    {
+                        planObjGeneral = planObjGeneral_temp;
+                    }
+
+                    if (requestedTSstructures_temp.Any())
+                    {
+                        requestedTSstructures = requestedTSstructures_temp;
+                    }
                 }
                 return false;
             }
@@ -710,30 +920,32 @@ namespace VMATTBI_optLoop
 
         private string ParseSupportStructureId(string line)
         {
-            string supportID = "";
             line = CropLine(line, "{");
-            supportID = line.Substring(0,line.IndexOf("}"));
+            string supportID = line.Substring(0, line.IndexOf("}"));
             return supportID;
         }
 
         private Tuple<string, string, double, double, DoseValuePresentation> ParsePlanObjective(string line)
         {
-            string structure = "";
-            string constraintType = "";
-            double doseVal = 0.0;
-            double volumeVal = 0.0;
             DoseValuePresentation dvp;
             line = CropLine(line, "{");
-            structure = line.Substring(0, line.IndexOf(","));
+            string structure = line.Substring(0, line.IndexOf(","));
             line = CropLine(line, ",");
-            constraintType = line.Substring(0, line.IndexOf(","));
+            string constraintType = line.Substring(0, line.IndexOf(","));
             line = CropLine(line, ",");
-            doseVal = double.Parse(line.Substring(0, line.IndexOf(",")));
+            double doseVal = double.Parse(line.Substring(0, line.IndexOf(",")));
             line = CropLine(line, ",");
-            volumeVal = double.Parse(line.Substring(0, line.IndexOf(",")));
+            double volumeVal = double.Parse(line.Substring(0, line.IndexOf(",")));
             line = CropLine(line, ",");
-            if (line.Contains("Relative")) dvp = DoseValuePresentation.Relative;
-            else dvp = DoseValuePresentation.Absolute;
+            if (line.Contains("Relative"))
+            {
+                dvp = DoseValuePresentation.Relative;
+            }
+            else
+            {
+                dvp = DoseValuePresentation.Absolute;
+            }
+
             return Tuple.Create(structure, constraintType, doseVal, volumeVal, dvp);
         }
 
@@ -741,23 +953,18 @@ namespace VMATTBI_optLoop
         {
             //type (Dmax or V), dose value for volume constraint (N/A for Dmax), equality or inequality, volume (%) or dose (%)
             List<Tuple<string, double, string, double>> constraints = new List<Tuple<string, double, string, double>> { };
-            string structure = "";
-            double lowDoseLevel = 0.0;
-            double upperDoseLevel = 0.0;
-            double volumeVal = 0.0;
-            int priority = 0;
             try
             {
                 line = CropLine(line, "{");
-                structure = line.Substring(0, line.IndexOf(","));
+                string structure = line.Substring(0, line.IndexOf(","));
                 line = CropLine(line, ",");
-                lowDoseLevel = double.Parse(line.Substring(0, line.IndexOf(",")));
+                double lowDoseLevel = double.Parse(line.Substring(0, line.IndexOf(",")));
                 line = CropLine(line, ",");
-                upperDoseLevel = double.Parse(line.Substring(0, line.IndexOf(",")));
+                double upperDoseLevel = double.Parse(line.Substring(0, line.IndexOf(",")));
                 line = CropLine(line, ",");
-                volumeVal = double.Parse(line.Substring(0, line.IndexOf(",")));
+                double volumeVal = double.Parse(line.Substring(0, line.IndexOf(",")));
                 line = CropLine(line, ",");
-                priority = int.Parse(line.Substring(0, line.IndexOf(",")));
+                int priority = int.Parse(line.Substring(0, line.IndexOf(",")));
                 line = CropLine(line, "{");
 
                 while (!string.IsNullOrEmpty(line) && line.Substring(0, 1) != "}")
@@ -770,8 +977,14 @@ namespace VMATTBI_optLoop
                     {
                         //only add for final optimization (i.e., one more optimization requested where current calculated dose is used as intermediate)
                         constraintType = "finalOpt";
-                        if (!line.Contains(",")) line = CropLine(line, "}");
-                        else line = CropLine(line, ",");
+                        if (!line.Contains(","))
+                        {
+                            line = CropLine(line, "}");
+                        }
+                        else
+                        {
+                            line = CropLine(line, ",");
+                        }
                     }
                     else
                     {
@@ -780,7 +993,11 @@ namespace VMATTBI_optLoop
                             constraintType = "V";
                             line = CropLine(line, "V");
                             int index = 0;
-                            while (line.ElementAt(index).ToString() != ">" && line.ElementAt(index).ToString() != "<") index++;
+                            while (line.ElementAt(index).ToString() != ">" && line.ElementAt(index).ToString() != "<")
+                            {
+                                index++;
+                            }
+
                             doseVal = double.Parse(line.Substring(0, index));
                             line = line.Substring(index, line.Length - index);
                         }
@@ -819,14 +1036,31 @@ namespace VMATTBI_optLoop
             int k = 0;
             foreach (object obj in opt_parameters.Children)
             {
-                foreach (object obj1 in ((StackPanel)obj).Children) if ((obj1.Equals(btn))) k = i;
-                if (k > 0) break;
+                foreach (object obj1 in ((StackPanel)obj).Children)
+                {
+                    if ((obj1.Equals(btn)))
+                    {
+                        k = i;
+                    }
+                }
+
+                if (k > 0)
+                {
+                    break;
+                }
+
                 i++;
             }
 
             //clear entire list if there are only two entries (header + 1 real entry)
-            if (opt_parameters.Children.Count < 3) ClearAllOptimizationStructs();
-            else opt_parameters.Children.RemoveAt(k);
+            if (opt_parameters.Children.Count < 3)
+            {
+                ClearAllOptimizationStructs();
+            }
+            else
+            {
+                opt_parameters.Children.RemoveAt(k);
+            }
         }
 
         private void ClearAllOptimizationStructs()
@@ -839,7 +1073,10 @@ namespace VMATTBI_optLoop
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (app == null) return;
+            if (app == null)
+            {
+                return;
+            }
             //be sure to close the patient before closing the application. Not doing so will result in unclosed timestamps in eclipse
             app.ClosePatient();
             app.Dispose();
