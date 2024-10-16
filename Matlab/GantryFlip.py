@@ -8,8 +8,12 @@ from gooey import Gooey, GooeyParser
 
 @Gooey
 def main():
+    default_dir = "S:/Physics/"
+    if (os.path.exists(default_dir) == False):
+        default_dir = os.getcwd()
     parser = GooeyParser(description='Gantry Flip')
-    parser.add_argument('InputFile', widget='FileChooser', help='Select the DICOM file you want to flip')
+    parser.add_argument('InputFile', widget='FileChooser', help='Select the DICOM file you want to flip', 
+                        gooey_options={'wildcard': "DICOM Files (*.dcm)|*.dcm", 'default_dir': default_dir})
     args = parser.parse_args()
     sourceFile = args.InputFile
     saveFile = sourceFile.replace('.dcm', '-Flipped.dcm')
