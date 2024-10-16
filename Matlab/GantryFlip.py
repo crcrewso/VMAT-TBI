@@ -12,7 +12,7 @@ def main():
     parser.add_argument('InputFile', widget='FileChooser', help='Select the DICOM file you want to flip')
     args = parser.parse_args()
     sourceFile = args.InputFile
-    saveFile = sourceFile.replace('.dcm', '-Reversed.dcm')
+    saveFile = sourceFile.replace('.dcm', '-Flipped.dcm')
     filename = os.path.basename(sourceFile)
     path = os.path.dirname(sourceFile)
     referencePlan = pydicom.dcmread(sourceFile)
@@ -26,6 +26,9 @@ def main():
         flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel[0:11] + "-Rev"
 
     for i in range(len(referencePlan.BeamSequence)):
+        if (referencePlan.BeamSequence[i].BeamType == 'STATIC'):
+            print('Static Beam Detected. Skipping...')
+            continue
         CPcount = len(referencePlan.BeamSequence[i].ControlPointSequence)
         CPList = list(referencePlan.BeamSequence[i].ControlPointSequence)
         ControlPoints = referencePlan.BeamSequence[i].ControlPointSequence

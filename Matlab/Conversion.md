@@ -95,6 +95,11 @@ Here's how the code has been converted:
 1. The assignment of RPmodified.BeamSequence[i].ControlPointSequence[CPList[j]].GantryAngle has been updated to use the new swapAngle value.
 1. The error function has been replaced with a ValueError exception.
 
+## Updates
+
+1. Added setup field exclusion (looks for static fields and just copies them over)
+1. to build, run 'pyinstaller.exe .\build.spec'
+
 ## References
 
 [Github Project Notes](https://github.com/chriskiehl/Gooey/blob/master/docs/packaging/Packaging-Gooey.md)
