@@ -124,32 +124,7 @@ namespace VMATTBIautoPlan
                 appaBeamsPerIso.Add(new List<Beam>(beams));
             }
 
-            //logic to assign the isocenter names based on the number of vmat isos and the total number of isos (taken and modified from the generateTS class)
-            names.Add("Head");
-            if (numIsos > numVMATIsos)
-            {
-                if (numVMATIsos == 2) names.Add("Pelvis");
-                else
-                {
-                    names.Add("Chest");
-                    if (numVMATIsos == 3) names.Add("Pelvis");
-                    else if (numVMATIsos == 4) { names.Add("Abdomen"); names.Add("Pelvis"); }
-                }
-                names.Add("AP / PA upper legs");
-                if (numIsos - numVMATIsos == 2) names.Add("AP / PA lower legs");
-                //greater than 2 AP/pA isos (it happened once...)
-                else if (numIsos - numVMATIsos > 2) { names.Add("AP / PA Mid legs"); names.Add("AP / PA lower legs"); }
-            }
-            else
-            {
-                if (numVMATIsos == 2) names.Add("Pelvis");
-                else
-                {
-                    names.Add("Chest");
-                    if (numVMATIsos == 3) names.Add("Legs");
-                    else if (numVMATIsos == 4) { names.Add("Pelvis"); names.Add("Legs"); }
-                }
-            }
+            names = new isoNameHelper().getIsoNames(numVMATIsos, numIsos);
 
             //get the user origin in user coordinates
             VVector uOrigin = vmatPlan.StructureSet.Image.UserOrigin;

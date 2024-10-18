@@ -19,29 +19,42 @@ namespace VMATTBIautoPlan
                     break;
                 case 3:
                     isoNames.Add("Head");
-                    isoNames.Add("Chest");
+                    isoNames.Add("Thorax");
                     isoNames.Add("Legs");
                     break;
                 case 4:
                     isoNames.Add("Head");
-                    isoNames.Add("Chest");
+                    isoNames.Add("Thorax");
                     isoNames.Add("Pelvis");
                     isoNames.Add("Legs");
                     break;
                 case 5:
                     isoNames.Add("Head");
-                    isoNames.Add("Chest");
+                    isoNames.Add("Thorax");
                     isoNames.Add("Pelvis");
                     isoNames.Add("Legs_Sup");
                     isoNames.Add("Legs_Inf");
                     break;
                 case 6:
                     isoNames.Add("Head");
-                    isoNames.Add("Chest");
+                    isoNames.Add("Thorax");
                     isoNames.Add("Pelvis");
                     isoNames.Add("Legs_Sup");
                     isoNames.Add("Legs_Inf");
                     isoNames.Add("Feet");
+                    break;
+                case 7:
+                    isoNames.Add("Head");
+                    isoNames.Add("Thorax");
+                    isoNames.Add("Abdomen");
+                    isoNames.Add("Pelvis");
+                    isoNames.Add("Legs_Sup");
+                    isoNames.Add("Legs_Inf");
+                    isoNames.Add("Feet");
+                    break;
+                default:
+                    for (int i = 0; i < numIsos; i++)
+                        isoNames.Add("Iso " + i);
                     break;
             }
             return isoNames;

@@ -145,6 +145,8 @@ namespace VMATTBIautoPlan
                 MessageBox.Show("A plan named '_VMAT TBI' Already exists! \nESAPI can't remove plans in the clinical environment! \nPlease manually remove this plan and try again.");
                 return true;
             }
+            // TODO: Set calculation models 
+            // TODO: Remove Jaw Tracking. 
             plan = tbi.AddExternalPlanSetup(selectedSS);
             //100% dose prescribed in plan and plan ID is _VMAT TBI
             plan.SetPrescription(prescription.Item1, prescription.Item2, 1.0);
@@ -417,6 +419,7 @@ namespace VMATTBIautoPlan
                                     new VVector(0, yMax, 0)};
 
             //add the contours to each relevant plan for each structure in the jnxs stack
+            // TODO: break this out and add a button to call to recalculate jnxs. 
             int count = 0;
             foreach (Tuple<double, int, int> value in overlap)
             {
