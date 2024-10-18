@@ -26,8 +26,8 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="White">
-        <TabControl Background="DarkGray" HorizontalAlignment="Left" Height="480" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="600">
+    <Grid Background="White" Margin="0,0,0,-38">
+        <TabControl Background="DarkGray" HorizontalAlignment="Left" Height="522" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="600">
             <TabItem Header="TS Generation">
                 <StackPanel Name="TS_SP" HorizontalAlignment="Center" Margin="5">
                     <Grid>
@@ -41,7 +41,7 @@
                         <Button Content="Add Defaults" Width="100" HorizontalAlignment="Center" VerticalAlignment="Top" Click="add_defaults_click"/>
                         <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="clear_list_click"/>
                     </Grid>
-                    <ScrollViewer x:Name="spareStructScroller" Height="310" Width="550" Margin="0,5,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <ScrollViewer x:Name="spareStructScroller" Height="355" Width="550" Margin="0,5,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                         <StackPanel Name="structures_sp" Margin="5"></StackPanel>
                     </ScrollViewer>
                     <Button Content="Generate Tuning Structures" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,7,0,0" Click="generateStruct"></Button>
@@ -62,7 +62,7 @@
                         <Button x:Name="updateVMATisos" Content="Update" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Height="20" Margin="0,10,85,0" Click="updateVMATisos_Click"></Button>
                     </Grid>
                     <Label Content="Proposed isocenters and beams per isocenter" FontSize="20" FontStyle="Normal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"></Label>
-                    <StackPanel  Name="BEAMS_SP" HorizontalAlignment="Center" Width="550" Height="295" Margin="0,5,0,0">
+                    <StackPanel  Name="BEAMS_SP" HorizontalAlignment="Center" Width="550" Height="335" Margin="0,5,0,0">
                     </StackPanel>
                     <Button Content="Place Beams" FontWeight="Bold" Width="100" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,15,0,0" Click="place_beams_Click"/>
                 </StackPanel>
@@ -75,7 +75,7 @@
                         <Button Content="Scan RTSTRUCT and Add Constraints" Width="210" HorizontalAlignment="Center" VerticalAlignment="Top" Click="scanSS_Click"/>
                         <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="clear_optParams_Click"/>
                     </Grid>
-                    <ScrollViewer x:Name="optParamScroller" Height="332" Width="550" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <ScrollViewer x:Name="optParamScroller" Height="374" Width="550" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                         <StackPanel Name="opt_parameters" Margin="5"></StackPanel>
                     </ScrollViewer>
                     <Button Content="Set Optimization Constraints" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" Click="setOptConst_Click"></Button>

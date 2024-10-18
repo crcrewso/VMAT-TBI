@@ -13,65 +13,14 @@ namespace VMATTBIautoPlan
 {
     public partial class UI : UserControl
     {
+        // TODO: Rip out all references to Settings files and replace with hard-coded values
         string configFile = "";
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// HARD-CODED MAIN PARAMETERS FOR THIS CLASS AND ALL OTHER CLASSES IN THIS DLL APPLICATION.
         /// ADJUST THESE PARAMETERS TO YOUR TASTE. THESE PARAMETERS WILL BE OVERWRITTEN BY THE CONFIG.INI FILE IF IT IS SUPPLIED.
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        double scleroDosePerFx = 200;
-        int scleroNumFx = 4;
-        //structure, constraint type, dose cGy, volume %, priority
-        List<Tuple<string, string, double, double, int>> optConstDefaultSclero = new List<Tuple<string, string, double, double, int>>
-        {
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 800.0, 100.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Upper", 808.0, 0.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 802.0, 98.0, 100),
-            new Tuple<string, string, double, double, int>("Kidneys", "Mean", 100.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Kidneys-1cm", "Mean", 25.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Lungs", "Mean", 150.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Lungs-1cm", "Mean", 100.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Lungs-2cm", "Mean", 50.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Bowel", "Upper", 850.0, 0.0, 50)
-        };
-        double myeloDosePerFx = 200;
-        int myeloNumFx = 6;
-        List<Tuple<string, string, double, double, int>> optConstDefaultMyelo = new List<Tuple<string, string, double, double, int>>
-        {
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 1200.0, 100.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Upper", 1212.0, 0.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 1202.0, 98.0, 100),
-            new Tuple<string, string, double, double, int>("Kidneys", "Mean", 750, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Kidneys-1cm", "Mean", 400.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Lenses", "Upper", 1140, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Lungs", "Mean", 600.0, 0.0, 90),
-            new Tuple<string, string, double, double, int>("Lungs-1cm", "Mean", 300.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Lungs-2cm", "Mean", 200.0, 0.0, 70),
-            new Tuple<string, string, double, double, int>("Bowel", "Upper", 1205.0, 0.0, 50)
-        };
-        double nonmyeloDosePerFx = 200;
-        int nonmyeloNumFx = 1;
-        List<Tuple<string, string, double, double, int>> optConstDefaultNonMyelo = new List<Tuple<string, string, double, double, int>>
-        {
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 200.0, 100.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Upper", 202.0, 0.0, 100),
-            new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 201.0, 98.0, 100),
-            new Tuple<string, string, double, double, int>("Kidneys", "Mean", 120.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Kidneys-1cm", "Mean", 75.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Lungs", "Mean", 75.0, 0.0, 90),
-            new Tuple<string, string, double, double, int>("Lungs-1cm", "Mean", 50.0, 0.0, 80),
-            new Tuple<string, string, double, double, int>("Lungs-2cm", "Mean", 25.0, 0.0, 70),
-            new Tuple<string, string, double, double, int>("Ovaries", "Mean", 50.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Ovaries", "Upper", 75.0, 0.0, 70),
-            new Tuple<string, string, double, double, int>("Testes", "Mean", 50.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Testes", "Upper", 75.0, 0.0, 70),
-            new Tuple<string, string, double, double, int>("Lenses", "Upper", 190.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Brain", "Mean", 150.0, 0.0, 60),
-            new Tuple<string, string, double, double, int>("Brain-1cm", "Mean", 100.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Brain-2cm", "Mean", 75.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Brain-3cm", "Mean", 50.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Bowel", "Upper", 201.0, 0.0, 50),
-            new Tuple<string, string, double, double, int>("Thyroid", "Mean", 100.0, 0.0, 50)
-        };
+        
+        
 
         //general tuning structures to be added (if selected for sparing) to all case types
         List<Tuple<string, string>> TS_structures = new List<Tuple<string, string>>
@@ -146,7 +95,7 @@ namespace VMATTBIautoPlan
         List<string> linacs = new List<string> { "LA16", "LA17" };
         List<string> beamEnergies = new List<string> { "6X", "10X" };
         //default number of beams per isocenter from head to toe
-        int[] beamsPerIso = { 3, 4, 4, 2, 2, 2 };
+        int[] beamsPerIso = { 3, 4, 4, 2, 2, 2, 2 };
         //collimator rotations for how to orient the beams (placeBeams class)
         double[] collRot = { 3.0, 357.0, 87.0, 93.0 };
         //jaw positions of the placed VMAT beams
@@ -185,11 +134,12 @@ namespace VMATTBIautoPlan
         List<Structure> jnxs = new List<Structure> { };
         Structure flashStructure = null;
         planPrep prep = null;
+        Settings settings = null;
 
         public UI(ScriptContext c, string configurationFile)
         {
             InitializeComponent();
-
+            settings = new Settings();
             //check the version information of Eclipse installed on this machine. If it is older than version 15.6, let the user know that this script may not work properly on their system
             if (!double.TryParse(c.VersionInfo.Substring(0, c.VersionInfo.LastIndexOf(".")), out double vinfo)) MessageBox.Show("Warning! Could not parse Eclise version number! Proceed with caution!");
             else if (vinfo < 15.6) MessageBox.Show(String.Format("Warning! Detected Eclipse version: {0:0.0} is older than v15.6! Proceed with caution!", vinfo));
@@ -201,8 +151,9 @@ namespace VMATTBIautoPlan
             if (c.StructureSet == null) MessageBox.Show("Warning! No structure set in context! Please select a structure set at the top of the GUI!");
             else SSID.Text = c.StructureSet.Id;
 
-            //load script configuration and display the settings
-            if (configurationFile != "") loadConfigurationSettings(configurationFile);
+            // TODO - Remove this line
+            // load script configuration and display the settings
+            // if (configurationFile != "") loadConfigurationSettings(configurationFile);
             displayConfigurationParameters();
 
             //pre-populate the flash comboxes (set global flash as default)
@@ -282,8 +233,8 @@ namespace VMATTBIautoPlan
 
             configTB.Text += "-----------------------------------------------------------------------------" + System.Environment.NewLine;
             configTB.Text += String.Format("Scleroderma trial case parameters:") + System.Environment.NewLine;
-            configTB.Text += String.Format("Dose per fraction: {0} cGy", scleroDosePerFx) + System.Environment.NewLine;
-            configTB.Text += String.Format("Number of fractions: {0}", scleroNumFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Dose per fraction: {0} cGy", settings.ScleroDosePerFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Number of fractions: {0}", settings.ScleroNumFx) + System.Environment.NewLine;
             if (scleroSpareStruct.Any())
             {
                 configTB.Text += String.Format("Scleroderma case additional sparing structures:") + System.Environment.NewLine;
@@ -298,13 +249,13 @@ namespace VMATTBIautoPlan
             configTB.Text += System.Environment.NewLine;
             configTB.Text += String.Format("Optimization parameters:") + System.Environment.NewLine;
             configTB.Text += String.Format(" {0, -15} | {1, -16} | {2, -10} | {3, -10} | {4, -8} |", "structure Id", "constraint type", "dose (cGy)", "volume (%)", "priority") + System.Environment.NewLine;
-            foreach (Tuple<string,string,double,double,int> opt in optConstDefaultSclero) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
+            foreach (Tuple<string,string,double,double,int> opt in settings.OptConstDefaultSclero) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
             configTB.Text += System.Environment.NewLine;
 
             configTB.Text += "-----------------------------------------------------------------------------" + System.Environment.NewLine;
             configTB.Text += String.Format("Myeloablative case parameters:") + System.Environment.NewLine;
-            configTB.Text += String.Format("Dose per fraction: {0} cGy", myeloDosePerFx) + System.Environment.NewLine;
-            configTB.Text += String.Format("Number of fractions: {0}", myeloNumFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Dose per fraction: {0} cGy", settings.MyeloDosePerFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Number of fractions: {0}", settings.MyeloNumFx) + System.Environment.NewLine;
             if (myeloSpareStruct.Any())
             {
                 configTB.Text += String.Format("Myeloablative case additional sparing structures:") + System.Environment.NewLine;
@@ -315,13 +266,13 @@ namespace VMATTBIautoPlan
             else configTB.Text += String.Format("No additional sparing structures for Myeloablative case") + System.Environment.NewLine + System.Environment.NewLine;
             configTB.Text += String.Format("Optimization parameters:") + System.Environment.NewLine;
             configTB.Text += String.Format(" {0, -15} | {1, -16} | {2, -10} | {3, -10} | {4, -8} |", "structure Id", "constraint type", "dose (cGy)", "volume (%)", "priority") + System.Environment.NewLine;
-            foreach (Tuple<string, string, double, double, int> opt in optConstDefaultMyelo) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
+            foreach (Tuple<string, string, double, double, int> opt in settings.OptConstDefaultMyelo) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
             configTB.Text += System.Environment.NewLine;
 
             configTB.Text += "-----------------------------------------------------------------------------" + System.Environment.NewLine;
             configTB.Text += String.Format("Non-Myeloablative case parameters:") + System.Environment.NewLine;
-            configTB.Text += String.Format("Dose per fraction: {0} cGy", nonmyeloDosePerFx) + System.Environment.NewLine;
-            configTB.Text += String.Format("Number of fractions: {0}", nonmyeloNumFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Dose per fraction: {0} cGy", settings.NonMyeloDosePerFx) + System.Environment.NewLine;
+            configTB.Text += String.Format("Number of fractions: {0}", settings.NonMyeloNumFx) + System.Environment.NewLine;
             if (nonmyeloSpareStruct.Any())
             {
                 configTB.Text += String.Format("Non-Myeloablative case additional sparing structures:") + System.Environment.NewLine;
@@ -332,7 +283,7 @@ namespace VMATTBIautoPlan
             else configTB.Text += String.Format("No additional sparing structures for Non-Myeloablative case") + System.Environment.NewLine + System.Environment.NewLine;
             configTB.Text += String.Format("Optimization parameters:") + System.Environment.NewLine;
             configTB.Text += String.Format(" {0, -15} | {1, -16} | {2, -10} | {3, -10} | {4, -8} |", "structure Id", "constraint type", "dose (cGy)", "volume (%)", "priority") + System.Environment.NewLine;
-            foreach (Tuple<string, string, double, double, int> opt in optConstDefaultNonMyelo) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
+            foreach (Tuple<string, string, double, double, int> opt in settings.OptConstDefaultNonMyelo) configTB.Text += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, opt.Item5);
             configTB.Text += "-----------------------------------------------------------------------------" + System.Environment.NewLine;
             configScroller.ScrollToTop();
         }
@@ -1078,9 +1029,9 @@ namespace VMATTBIautoPlan
             List<Tuple<string, string, double, double, int>> defaultList = new List<Tuple<string, string, double, double, int>> { };
 
             //non-meyloabalative regime
-            if (nonmyelo_chkbox.IsChecked.Value) tmp = optConstDefaultNonMyelo;
+            if (nonmyelo_chkbox.IsChecked.Value) tmp = settings.OptConstDefaultNonMyelo;
             //meylo-abalative regime
-            else if (myelo_chkbox.IsChecked.Value) tmp = optConstDefaultMyelo;
+            else if (myelo_chkbox.IsChecked.Value) tmp = settings.OptConstDefaultMyelo;
             //scleroderma trial regiment
             //no treatment template selected => scale optimization objectives by ratio of entered Rx dose to closest template treatment Rx dose
             else if (prescription != null)
@@ -1089,15 +1040,15 @@ namespace VMATTBIautoPlan
                 double baseDose;
                 List<Tuple<string, string, double, double, int>> dummy = new List<Tuple<string, string, double, double, int>> { };
                 //use optimization objects of the closer of the two default regiments (6-18-2021)
-                if (Math.Pow(RxDose - (nonmyeloNumFx * nonmyeloDosePerFx), 2) <= Math.Pow(RxDose - (myeloNumFx * myeloDosePerFx), 2))
+                if (Math.Pow(RxDose - (settings.NonMyeloNumFx * settings.NonMyeloDosePerFx), 2) <= Math.Pow(RxDose - (settings.MyeloNumFx * settings.MyeloDosePerFx), 2))
                 {
-                    dummy = optConstDefaultNonMyelo;
-                    baseDose = nonmyeloDosePerFx*nonmyeloNumFx;
+                    dummy = settings.OptConstDefaultNonMyelo;
+                    baseDose = settings.NonMyeloDosePerFx * settings.NonMyeloNumFx;
                 }
                 else
                 {
-                    dummy = optConstDefaultMyelo;
-                    baseDose = myeloDosePerFx*myeloNumFx;
+                    dummy = settings.OptConstDefaultMyelo;
+                    baseDose = settings.MyeloDosePerFx * settings.MyeloNumFx;
                 }
                 foreach (Tuple<string, string, double, double, int> opt in dummy) tmp.Add(Tuple.Create(opt.Item1, opt.Item2, opt.Item3 * (RxDose / baseDose), opt.Item4, opt.Item5));
             }
@@ -1538,9 +1489,9 @@ namespace VMATTBIautoPlan
             {
                 if (nonmyelo_chkbox.IsChecked.Value) nonmyelo_chkbox.IsChecked = false;
                 // if (sclero_chkbox.IsChecked.Value) sclero_chkbox.IsChecked = false;
-                setPresciptionInfo(myeloDosePerFx, myeloNumFx);
+                setPresciptionInfo(settings.MyeloDosePerFx, settings.MyeloNumFx);
             }
-            else if (!nonmyelo_chkbox.IsChecked.Value && dosePerFx.Text == myeloDosePerFx.ToString() && numFx.Text == myeloNumFx.ToString())
+            else if (!nonmyelo_chkbox.IsChecked.Value && dosePerFx.Text == settings.MyeloDosePerFx.ToString() && numFx.Text == settings.MyeloNumFx.ToString())
             {
                 dosePerFx.Text = "";
                 numFx.Text = "";
@@ -1554,9 +1505,9 @@ namespace VMATTBIautoPlan
             if (nonmyelo_chkbox.IsChecked.Value)
             {
                 if (myelo_chkbox.IsChecked.Value) myelo_chkbox.IsChecked = false;
-                setPresciptionInfo(nonmyeloDosePerFx, nonmyeloNumFx);
+                setPresciptionInfo(settings.NonMyeloDosePerFx, settings.NonMyeloNumFx);
             }
-            else if (!myelo_chkbox.IsChecked.Value && dosePerFx.Text == nonmyeloDosePerFx.ToString() && numFx.Text == nonmyeloNumFx.ToString())
+            else if (!myelo_chkbox.IsChecked.Value && dosePerFx.Text == settings.MyeloDosePerFx.ToString() && numFx.Text == settings.MyeloNumFx.ToString())
             {
                 dosePerFx.Text = "";
                 numFx.Text = "";
@@ -1603,8 +1554,8 @@ namespace VMATTBIautoPlan
                 Rx.Text = (newNumFx * newDoseFx).ToString();
                 if (useFlashByDefault) flash_chkbox.IsChecked = true;
                 updateUseFlash();
-                if (myelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != myeloDosePerFx * myeloNumFx) myelo_chkbox.IsChecked = false;
-                else if (nonmyelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != nonmyeloDosePerFx * nonmyeloNumFx) nonmyelo_chkbox.IsChecked = false;
+                if (myelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != settings.MyeloDosePerFx * settings.MyeloNumFx) myelo_chkbox.IsChecked = false;
+                else if (nonmyelo_chkbox.IsChecked.Value && newNumFx * newDoseFx != settings.NonMyeloDosePerFx * settings.MyeloNumFx) nonmyelo_chkbox.IsChecked = false;
             }
         }
 
@@ -1670,8 +1621,9 @@ namespace VMATTBIautoPlan
             //The shift note has to be retrieved first! Otherwise, we don't have instances of the plan objects
             if (shiftTB.Text != "YES")
             {
-                MessageBox.Show("Please generate the shift note before separating the plans!");
-                return;
+                var messageBoxResult = MessageBox.Show("no shift note", "Please generate the shift note before separating the plans! \n Continue?", MessageBoxButton.YesNo);
+                if (messageBoxResult == MessageBoxResult.No)
+                    return;
             }
 
             //separate the plans
@@ -1722,6 +1674,8 @@ namespace VMATTBIautoPlan
         }
 
         //stuff related to script configuration
+        // TODO - remove this
+        /*
         private void loadNewConfigFile_Click(object sender, RoutedEventArgs e)
         {
             //load a configuration file different from the default in the executing assembly folder
@@ -1732,8 +1686,12 @@ namespace VMATTBIautoPlan
 
             if (openFileDialog.ShowDialog().Value) { if (!loadConfigurationSettings(openFileDialog.FileName)) displayConfigurationParameters(); else MessageBox.Show("Error! Selected file is NOT valid!"); }
         }
-
+        */
+        
+        
         //parse the relevant data in the configuration file
+        // TODO: Delete this
+        /*
         private bool loadConfigurationSettings(string file)
         {
             configFile = file;
@@ -1869,8 +1827,8 @@ namespace VMATTBIautoPlan
                                                 {
                                                     string parameter = line.Substring(0, line.IndexOf("="));
                                                     string value = line.Substring(line.IndexOf("=") + 1, line.Length - line.IndexOf("=") - 1);
-                                                    if (parameter == "dose per fraction") { if (double.TryParse(value, out double result)) scleroDosePerFx = result; }
-                                                    else if (parameter == "num fx") { if (int.TryParse(value, out int fxResult)) scleroNumFx = fxResult; }
+                                                    if (parameter == "dose per fraction") { if (double.TryParse(value, out double result)) settings.ScleroDosePerFx = result; }
+                                                    else if (parameter == "num fx") { if (int.TryParse(value, out int fxResult)) settings.ScleroNumFx = fxResult; }
                                                 }
                                                 else if (line.Contains("add sparing structure")) scleroSpareStruct_temp.Add(parseSparingStructure(line));
                                                 else if (line.Contains("add opt constraint")) optConstDefaultSclero_temp.Add(parseOptimizationConstraint(line));
@@ -1938,7 +1896,8 @@ namespace VMATTBIautoPlan
             //let the user know if the data parsing failed
             catch (Exception e) { MessageBox.Show(String.Format("Error could not load configuration file because: {0}\n\nAssuming default parameters", e.Message)); return true; }
         }
-
+        */
+        
         //very useful helper method to remove everything in the input string 'line' up to a given character 'cropChar'
         private string cropLine (string line, string cropChar) { return line.Substring(line.IndexOf(cropChar) + 1, line.Length - line.IndexOf(cropChar) - 1); }
 
