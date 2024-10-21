@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 
 namespace VMATTBIautoPlan
 {
-    class isoNameHelper
+    class IsoNameHelper
     {
-        public List<string> getIsoNames(int numVMATIsos, int numIsos)
+
+        public List<string> GetIsoNames(int numVMATIsos)
+        {
+            return GetIsoNames(numVMATIsos, numVMATIsos);
+        }
+
+
+
+        public List<string> GetIsoNames(int numVMATIsos, int numIsos)
         {
             List<string> isoNames = new List<string> { };
-            switch (numIsos)
+            switch (numVMATIsos)
             {
                 case 2:
                     isoNames.Add("Head");

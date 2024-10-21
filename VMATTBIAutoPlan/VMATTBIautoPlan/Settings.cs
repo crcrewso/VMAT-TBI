@@ -3,15 +3,78 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VMS.TPS.Common.Model.Types;
 
 namespace VMATTBIautoPlan
 {
     public class Settings
     {
+
+        
+
+        public Settings()
+        {
+            
+        }
+
+        public  string ConfigFile = "VMATTBIautoPlan.config";
+
+        // General
+        //flash option
+        public  bool UseFlashByDefault = true;
+        //default flash type is global
+        public string DefaultFlashType = "Global";
+        //default flash margin of 0.5 cm
+        public string DefaultFlashMargin = "0.5";
+        //default inner PTV margin from body of 0.3 cm
+        public  string DefaultTargetMargin = "0.3";
+        //option to contour overlap between VMAT fields in adjacent isocenters and default margin for contouring the overlap
+        public bool ContourOverlap = true;
+        public string ContourFieldOverlapMargin = "1.0";
+        public double ContourOverlapMargin = 10.0;
+        //point this to the directory holding the documentation files
+        public readonly string DocumentationPath = @"S:\Physics";
+        //default course ID
+        public readonly string CourseId = "VMAT TBI";
+        //assign technique as VMAT for all fields
+        public readonly bool AllVMAT = true;
+        //flag to see if user wants to check for potential couch collision (based on stanford experience)
+        public readonly bool CheckTTCollision = false;
+        //used to keep track of how many VMAT isocenters should be inferior to matchline
+        public readonly int ExtraIsos = 0;
+        //treatment units and associated photon beam energies
+        public readonly List<string> Linacs = new List<string> { "TrueBeam1CC", "Mirage", "Solstice" };
+        public readonly List<string> BeamEnergies = new List<string> { "6X", "10X" };
+        //default number of beams per isocenter from head to toe
+        public readonly int[] BeamsPerIso = { 3, 4, 4, 2, 2, 2, 2 };
+        //collimator rotations for how to orient the beams (placeBeams class)
+        public readonly double[] CollRot = { 3.0, 357.0, 87.0, 93.0 };
+        //jaw positions of the placed VMAT beams
+        public readonly List<VRect<double>> JawPos = new List<VRect<double>> {
+            new VRect<double>(-20.0, -200.0, 200.0, 200.0),
+            new VRect<double>(-200.0, -200.0, 20.0, 200.0),
+            new VRect<double>(-200.0, -200.0, 0.0, 200.0),
+            new VRect<double>(0.0, -200.0, 200.0, 200.0) };
+        //photon beam calculation model
+        public readonly string CalculationModel = "AAA_15605";
+        //photon optimization algorithm
+        public readonly string OptimizationModel = "PO_15605";
+        //use GPU for dose calculation (not optimization)
+        public readonly string UseGPUdose = "false";
+        //use GPU for optimization
+        public readonly string UseGPUoptimization = "false";
+        //what MR level should the optimizer restart at following intermediate dose calculation
+        public readonly string MRrestartLevel = "MR3";
+        // TODO Add a setting for the MLC aperture shape controller (Moderate)
+
+
+
+
+
         // Sclero
         public double ScleroDosePerFx { get { return scleroDosePerFx; } }
         public int ScleroNumFx { get { return scleroNumFx; } }
-        public List<Tuple<string, string, double, double, int>> OptConstDefaultSclero { get; }
+        public List<Tuple<string, string, double, double, int>> OptConstDefaultSclero { get { return optConstDefaultSclero; } }
 
         // Myelo
         public double MyeloDosePerFx { get { return myeloDosePerFx; } }
@@ -24,12 +87,18 @@ namespace VMATTBIautoPlan
         public List<Tuple<string, string, double, double, int>> OptConstDefaultNonMyelo { get { return optConstDefaultNonMyelo; } }
 
 
+        // Tuning Structures
+        public List<Tuple<string, string>> TS_Structures { get { return ts_structures; } }
+        public List<Tuple<string, string>> ScleroStructures { get { return scleroStructures; } }
+
+        // Optimization Constraints
+        public List<Tuple<string, string, double>> DefaultSpareStruct { get { return defaultSpareStruct; } }
+        public List<Tuple<string, string, double>> ScleroSpareStruct { get { return scleroSpareStruct; } }
+        public List<Tuple<string, string, double>> MyeloSpareStruct { get { return myeloSpareStruct; } }
+        public List<Tuple<string, string, double>> NonMyeloSpareStruct { get { return nonmyeloSpareStruct; } }
 
 
-        public Settings()
-        {
 
-        }
 
         #region sclero
         readonly double scleroDosePerFx = 200;
@@ -51,9 +120,9 @@ namespace VMATTBIautoPlan
         #endregion
 
         #region myelo
-        double myeloDosePerFx = 200;
-        int myeloNumFx = 6;
-        List<Tuple<string, string, double, double, int>> optConstDefaultMyelo =
+        readonly double myeloDosePerFx = 200;
+        readonly int myeloNumFx = 6;
+        readonly List<Tuple<string, string, double, double, int>> optConstDefaultMyelo =
             new List<Tuple<string, string, double, double, int>>
             {
                 new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 1200.0, 100.0, 100),
@@ -70,9 +139,9 @@ namespace VMATTBIautoPlan
         #endregion
 
         #region nonmyleo
-        double nonmyeloDosePerFx = 200;
-        int nonmyeloNumFx = 1;
-        List<Tuple<string, string, double, double, int>> optConstDefaultNonMyelo = new List<Tuple<string, string, double, double, int>>
+        readonly double nonmyeloDosePerFx = 200;
+        readonly int nonmyeloNumFx = 1;
+        readonly List<Tuple<string, string, double, double, int>> optConstDefaultNonMyelo = new List<Tuple<string, string, double, double, int>>
         {
             new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Lower", 200.0, 100.0, 100),
             new Tuple<string, string, double, double, int>("TS_PTV_VMAT", "Upper", 202.0, 0.0, 100),
@@ -98,7 +167,62 @@ namespace VMATTBIautoPlan
 
         #endregion
 
+        #region Tuning Structures
 
+        //general tuning structures to be added (if selected for sparing) to all case types
+        readonly List<Tuple<string, string>> ts_structures = new List<Tuple<string, string>>
+        { Tuple.Create("CONTROL","Human_Body"),
+          Tuple.Create("CONTROL","Lungs-1cm"),
+          Tuple.Create("CONTROL","Lungs-2cm"),
+          Tuple.Create("CONTROL","Liver-1cm"),
+          Tuple.Create("CONTROL","Liver-2cm"),
+          Tuple.Create("CONTROL","Kidneys-1cm"),
+          Tuple.Create("CONTROL","Brain-0.5cm"),
+          Tuple.Create("CONTROL","Brain-1cm"),
+          Tuple.Create("CONTROL","Brain-2cm"),
+          Tuple.Create("CONTROL","Brain-3cm"),
+          Tuple.Create("PTV","PTV_Body"),
+          Tuple.Create("CONTROL","TS_PTV_VMAT")
+        };
+
+
+        //scleroderma trial-specific tuning structures
+        readonly List<Tuple<string, string>> scleroStructures = new List<Tuple<string, string>>
+        {
+            Tuple.Create("CONTROL","Lung_Block_L"),
+            Tuple.Create("CONTROL","Lung_Block_R"),
+            Tuple.Create("CONTROL","Lungs_Eval"),
+            Tuple.Create("CONTROL","Kidney_Block_L"),
+            Tuple.Create("CONTROL","Kidney_Block_R")
+        };
+
+        #endregion
+
+        #region optimization constraints
+
+        readonly List<Tuple<string, string, double>> defaultSpareStruct = new List<Tuple<string, string, double>>
+        {
+            new Tuple<string, string, double>("Lungs", "Mean Dose < Rx Dose", 0.3),
+            new Tuple<string, string, double>("Kidneys", "Mean Dose < Rx Dose", 0.0),
+            new Tuple<string, string, double>("Bowel", "Dmax ~ Rx Dose", 0.0)
+        };
+
+        readonly List<Tuple<string, string, double>> scleroSpareStruct = new List<Tuple<string, string, double>> { };
+
+        readonly List<Tuple<string, string, double>> myeloSpareStruct = new List<Tuple<string, string, double>>
+        {
+            new Tuple<string, string, double>("Lenses", "Mean Dose < Rx Dose", 0.1),
+        };
+
+        readonly List<Tuple<string, string, double>> nonmyeloSpareStruct = new List<Tuple<string, string, double>>
+        {
+            new Tuple<string, string, double>("Ovaries", "Mean Dose < Rx Dose", 1.5),
+            new Tuple<string, string, double>("Testes", "Mean Dose < Rx Dose", 2.0),
+            new Tuple<string, string, double>("Brain", "Mean Dose < Rx Dose", -0.5),
+            new Tuple<string, string, double>("Lenses", "Dmax ~ Rx Dose", 0.0),
+            new Tuple<string, string, double>("Thyroid", "Mean Dose < Rx Dose", 0.0)
+        };
+        #endregion
 
     }
 }

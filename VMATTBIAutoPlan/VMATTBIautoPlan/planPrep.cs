@@ -9,7 +9,7 @@ using VMS.TPS.Common.Model.Types;
 
 namespace VMATTBIautoPlan
 {
-    class planPrep
+    class PlanPrep
     {
         //common variables
         ExternalPlanSetup vmatPlan = null;
@@ -27,7 +27,7 @@ namespace VMATTBIautoPlan
         List<ExternalPlanSetup> separatedPlans = new List<ExternalPlanSetup> { };
         public bool flashRemoved = false;
 
-        public planPrep(ExternalPlanSetup vmat, IEnumerable<ExternalPlanSetup> appa)
+        public PlanPrep(ExternalPlanSetup vmat, IEnumerable<ExternalPlanSetup> appa)
         {
             //copy arguments into local variables
             vmatPlan = vmat;
@@ -36,7 +36,8 @@ namespace VMATTBIautoPlan
             if (appa.Count() > 1) legsSeparated = true;
         }
 
-        public bool getShiftNote()
+        // TODO: This is a mess, get better logic to describe the shifts
+        public bool GetShiftNote()
         {
             //loop through each beam in the vmat plan, grab the isocenter position of the beam. Compare the z position of each isocenter to the list of z positions in the vector. 
             //If no match is found, this is a new isocenter. Add it to the stack. If it is not unique, this beam belongs to an existing isocenter group --> ignore it
@@ -124,7 +125,7 @@ namespace VMATTBIautoPlan
                 appaBeamsPerIso.Add(new List<Beam>(beams));
             }
 
-            names = new isoNameHelper().getIsoNames(numVMATIsos, numIsos);
+            names = new IsoNameHelper().GetIsoNames(numVMATIsos, numIsos);
 
             //get the user origin in user coordinates
             VVector uOrigin = vmatPlan.StructureSet.Image.UserOrigin;
@@ -161,26 +162,27 @@ namespace VMATTBIautoPlan
             //convert the user origin back to dicom coordinates
             uOrigin = vmatPlan.StructureSet.Image.UserToDicom(uOrigin, vmatPlan);
 
+            
             //grab the couch surface
             Structure couchSurface = vmatPlan.StructureSet.Structures.FirstOrDefault(x => x.Id.ToLower() == "couchsurface");
             double TT = 0;
             //check if couch is present. Warn if not found, otherwise it is the separation between the the beam isocenter position and the minimum y-position of the couch surface (in dicom coordinates)
-            if (couchSurface == null) MessageBox.Show("Warning! No couch surface structure found!");
-            else TT = (vmatPlan.Beams.First(x => !x.IsSetupField).IsocenterPosition.y - couchSurface.MeshGeometry.Positions.Min(p => p.Y)) / 10;
+            //if (couchSurface == null) MessageBox.Show("Warning! No couch surface structure found!");
+            //else TT = (vmatPlan.Beams.First(x => !x.IsSetupField).IsocenterPosition.y - couchSurface.MeshGeometry.Positions.Min(p => p.Y)) / 10;
 
             //create the message
             string message = "";
-            if (couchSurface != null) message += "***Bars out***\r\n";
-            else message += "No couch surface structure found in plan!\r\n";
+            //if (couchSurface != null) message += "***Bars out***\r\n";
+            //else message += "No couch surface structure found in plan!\r\n";
             //check if AP/PA plans are in FFS orientation
-            if (appaPlan.Any() && appaPlan.Where(x => x.TreatmentOrientation != PatientOrientation.FeetFirstSupine).Any())
+            /*if (appaPlan.Any() && appaPlan.Where(x => x.TreatmentOrientation != PatientOrientation.FeetFirstSupine).Any())
             {
                 message += "The following AP/PA plans are NOT in the FFS orientation:\r\n";
                 foreach (ExternalPlanSetup p in appaPlan) if (p.TreatmentOrientation != PatientOrientation.FeetFirstSupine) message += p.Id + "\r\n";
                 message += "WARNING! THE COUCH SHIFTS FOR THESE PLANS WILL NOT BE ACCURATE!\r\n";
-            }
-            if (numIsos > numVMATIsos) message += "VMAT TBI setup per procedure. Please ensure the matchline on Spinning Manny and the bag matches\r\n";
-            else message += "VMAT TBI setup per procedure. No Spinning Manny.\r\r\n";
+            }*/
+            //if (numIsos > numVMATIsos) message += "VMAT TBI setup per procedure. Please ensure the matchline on Spinning Manny and the bag matches\r\n";
+            //else message += "VMAT TBI setup per procedure. No Spinning Manny.\r\r\n";
             message += String.Format("TT = {0:0.0} cm for all plans\r\n", TT);
             message += "Dosimetric shifts SUP to INF:\r\n";
 
@@ -199,10 +201,10 @@ namespace VMATTBIautoPlan
                 if (i == numVMATIsos)
                 {
                     //if numVMATisos == numIsos this message won't be displayed. Otherwise, we have exhausted the vmat isos and need to add these lines to the shift note
-                    message += "Rotate Spinning Manny, shift to opposite Couch Lat\r\n";
-                    message += "Upper Leg iso - same Couch Lng as Pelvis iso\r\n";
+                    //message += "Rotate Spinning Manny, shift to opposite Couch Lat\r\n";
+                    //message += "Upper Leg iso - same Couch Lng as Pelvis iso\r\n";
                     //let the therapists know that they need to shift couch lateral to the opposite side if the initial lat shift was non-zero
-                    if (Math.Abs(shifts.ElementAt(0).Item3.Item1) >= 0.1) message += "Shift couch lateral to opposite side!\r\n";
+                    //if (Math.Abs(shifts.ElementAt(0).Item3.Item1) >= 0.1) message += "Shift couch lateral to opposite side!\r\n";
                 }
                 //shift messages when the current isocenter is NOT the number of vmat isocenters (i.e., the first ap/pa isocenter). First case is for the vmat isocenters, the second case is when the isocenters are ap/pa (but not the first ap/pa isocenter)
                 else if (i < numVMATIsos) message += String.Format("{0} iso shift from {1} iso = {2:0.0} cm {3} ({4:0.0} cm {5} from CT ref)\r\n", shifts.ElementAt(i).Item1, shifts.ElementAt(i - 1).Item1, Math.Abs(shifts.ElementAt(i).Item3.Item3), shifts.ElementAt(i).Item3.Item3 > 0 ? "SUP" : "INF", Math.Abs(shifts.ElementAt(i).Item2.Item3), shifts.ElementAt(i).Item2.Item3 > 0 ? "SUP" : "INF");
@@ -215,8 +217,9 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        public bool separate()
+        public bool Separate()
         {
+            // TODO: Simplify this logic for vmat only 
             //check for setup fields in the vmat and AP/PA plans
             if(!vmatPlan.Beams.Where(x => x.IsSetupField).Any() || (appaPlan.Count() > 0 && !legsSeparated && !appaPlan.First().Beams.Where(x => x.IsSetupField).Any()))
             {
@@ -230,13 +233,13 @@ namespace VMATTBIautoPlan
             }
 
             //check if flash was used in the plan. If so, ask the user if they want to remove these structures as part of cleanup
-            if (checkForFlash())
+            if (CheckForFlash())
             {
                 confirmUI CUI = new VMATTBIautoPlan.confirmUI();
                 CUI.message.Text = "I found some structures in the structure set for generating flash." + Environment.NewLine + Environment.NewLine + "Do you want me to remove them?!";
                 CUI.button1.Text = "No";
                 CUI.ShowDialog();
-                if (CUI.confirm) if(removeFlashStr()) return true;
+                if (CUI.confirm) if(RemoveFlashStr()) return true;
             }
             //counter for indexing names
             int count = 0;
@@ -300,7 +303,7 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        private bool checkForFlash()
+        private bool CheckForFlash()
         {
             //look in the structure set to see if any of the structures contain the string 'flash'. If so, return true indicating flash was included in this plan
             IEnumerable<Structure> flashStr = vmatPlan.StructureSet.Structures.Where(x => x.Id.ToLower().Contains("flash"));
@@ -308,7 +311,7 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        private bool removeFlashStr()
+        private bool RemoveFlashStr()
         {
             //remove the structures used to generate flash in the plan
             StructureSet ss = vmatPlan.StructureSet;
@@ -374,7 +377,7 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        public void calculateDose()
+        public void CalculateDose()
         {
             //loop through each plan in the separatedPlans list (generated in the separate method above) and calculate dose for each plan
             foreach(ExternalPlanSetup p in separatedPlans) p.CalculateDose();

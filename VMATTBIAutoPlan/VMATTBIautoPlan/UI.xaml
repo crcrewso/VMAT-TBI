@@ -26,8 +26,8 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="White" Margin="0,0,0,-38">
-        <TabControl Background="DarkGray" HorizontalAlignment="Left" Height="522" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="600">
+    <Grid Background="White">
+        <TabControl Background="DarkGray" HorizontalAlignment="Left" Height="480" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="600">
             <TabItem Header="TS Generation">
                 <StackPanel Name="TS_SP" HorizontalAlignment="Center" Margin="5">
                     <Grid>
@@ -37,48 +37,48 @@
                     </Grid>
                     <Label Content="Structures to Spare" FontSize="20" FontStyle="Normal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,3,0,0"></Label>
                     <Grid Height="25" Width ="500" HorizontalAlignment="Center" Margin="0,5,0,0">
-                        <Button x:Name="add_str" Content="Add Structure" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Click="add_str_click"/>
-                        <Button Content="Add Defaults" Width="100" HorizontalAlignment="Center" VerticalAlignment="Top" Click="add_defaults_click"/>
-                        <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="clear_list_click"/>
+                        <Button x:Name="add_str" Content="Add Structure" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Add_str_click"/>
+                        <Button Content="Add Defaults" Width="100" HorizontalAlignment="Center" VerticalAlignment="Top" Click="Add_defaults_click"/>
+                        <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Clear_list_click"/>
                     </Grid>
-                    <ScrollViewer x:Name="spareStructScroller" Height="355" Width="550" Margin="0,5,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <ScrollViewer x:Name="spareStructScroller" Height="310" Width="550" Margin="0,5,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                         <StackPanel Name="structures_sp" Margin="5"></StackPanel>
                     </ScrollViewer>
-                    <Button Content="Generate Tuning Structures" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,7,0,0" Click="generateStruct"></Button>
+                    <Button Content="Generate Tuning Structures" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,7,0,0" Click="GenerateStruct"></Button>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Beam Placement">
                 <StackPanel  Name="BEAMS_HEADER" HorizontalAlignment="Center" Margin="5">
                     <Grid>
                         <Label Content="Contour overlap between VMAT isocenters:" FontSize="13" FontStyle="Normal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,255,0"></Label>
-                        <CheckBox x:Name="contourOverlap_chkbox" HorizontalAlignment="Right" Margin="0,8,240,0" Click="contourOverlapChecked"/>
+                        <CheckBox x:Name="contourOverlap_chkbox" HorizontalAlignment="Right" Margin="0,8,240,0" Click="ContourOverlapChecked"/>
                         <Label x:Name="contourOverlapLabel" Content="Added Margin (cm):" FontSize="13" FontStyle="Normal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,105,0" Visibility="Hidden"></Label>
                         <TextBox x:Name="contourOverlapTB" FontSize="12" TextAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Width="35" Height="20" Margin="0,6,70,0" Visibility="Hidden"></TextBox>
-                        <Button x:Name="contourOverlapInfo" Content="?" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="20" Margin="0,6,22,0" Click="contourOverlapInfo_Click"></Button>
+                        <Button x:Name="contourOverlapInfo" Content="?" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="20" Margin="0,6,22,0" Click="ContourOverlapInfo_Click"></Button>
                     </Grid>
                     <Grid>
                         <Label Content="Requested number of VMAT isocenters: " FontSize="14" FontStyle="Normal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,230,0"></Label>
                         <TextBox x:Name="numVMATisosTB" FontSize="12" TextAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Width="40" Margin="0,12,190,0"></TextBox>
-                        <Button x:Name="updateVMATisos" Content="Update" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Height="20" Margin="0,10,85,0" Click="updateVMATisos_Click"></Button>
+                        <Button x:Name="updateVMATisos" Content="Update" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Height="20" Margin="0,10,85,0" Click="UpdateVMATisos_Click"></Button>
                     </Grid>
-                    <Label Content="Proposed isocenters and beams per isocenter" FontSize="20" FontStyle="Normal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"></Label>
-                    <StackPanel  Name="BEAMS_SP" HorizontalAlignment="Center" Width="550" Height="335" Margin="0,5,0,0">
+                    <Label Content="Proposed isocenters and beams per isocenter" FontSize="18" FontStyle="Normal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0"></Label>
+                    <StackPanel  Name="BEAMS_SP" HorizontalAlignment="Center" Width="550" Height="300" Margin="0,0,0,0">
                     </StackPanel>
-                    <Button Content="Place Beams" FontWeight="Bold" Width="100" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,15,0,0" Click="place_beams_Click"/>
+                    <Button Content="Place Beams" FontWeight="Bold" Width="100" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,15,0,0" Click="Place_beams_Click"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Optimization Setup">
                 <StackPanel Name="OPT" HorizontalAlignment="Center" Margin="5">
                     <Label Content="Optimization Parameters" FontSize="20" FontStyle="Normal" HorizontalAlignment="Center" VerticalAlignment="Top"></Label>
                     <Grid Height="25" Width ="500" HorizontalAlignment="Center" Margin="0,5,0,0">
-                        <Button Content="Add Constraint" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Click="add_constraint_Click"/>
-                        <Button Content="Scan RTSTRUCT and Add Constraints" Width="210" HorizontalAlignment="Center" VerticalAlignment="Top" Click="scanSS_Click"/>
-                        <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="clear_optParams_Click"/>
+                        <Button Content="Add Constraint" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Add_constraint_Click"/>
+                        <Button Content="Scan RTSTRUCT and Add Constraints" Width="210" HorizontalAlignment="Center" VerticalAlignment="Top" Click="ScanSS_Click"/>
+                        <Button Content="Clear List" Width="100" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Clear_optParams_Click"/>
                     </Grid>
-                    <ScrollViewer x:Name="optParamScroller" Height="374" Width="550" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <ScrollViewer x:Name="optParamScroller" Height="332" Width="550" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                         <StackPanel Name="opt_parameters" Margin="5"></StackPanel>
                     </ScrollViewer>
-                    <Button Content="Set Optimization Constraints" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" Click="setOptConst_Click"></Button>
+                    <Button Content="Set Optimization Constraints" FontWeight="Bold" Width="170" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" Click="SetOptConst_Click"></Button>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Plan Preparation">
@@ -88,19 +88,19 @@
                         <Label Content="Completed?" FontSize="20" FontStyle="Normal" HorizontalAlignment="Center" Margin="200,0,0,0"></Label>
                     </Grid>
                     <Grid Height="40" Width ="400" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
-                        <Button x:Name="generateShiftNote" Content="Generate shift note" Width="120" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="generateShiftNote_Click"></Button>
+                        <Button x:Name="generateShiftNote" Content="Generate shift note" Width="120" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="GenerateShiftNote_Click"></Button>
                         <TextBox x:Name="shiftTB" Text="NO" IsReadOnly="True" FontWeight="Bold" TextAlignment="Center" Foreground="black" Background="Red" Width="70" Height="20" Margin="200,0,0,0"></TextBox>
                     </Grid>
                     <Grid Height="40" Width ="400" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
-                        <Button x:Name="separatePlans" Content="Separate plans" Width="100" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="separatePlans_Click"></Button>
+                        <Button x:Name="separatePlans" Content="Separate plans" Width="100" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="SeparatePlans_Click"></Button>
                         <TextBox x:Name="separateTB" Text="NO" IsReadOnly="True" FontWeight="Bold" TextAlignment="Center" Foreground="black" Background="Red" Width="70" Height="20" Margin="200,0,0,0"></TextBox>
                     </Grid>
                     <Grid Height="40" Width ="400" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
-                        <Button x:Name="calcDose" Content="Calculate dose (optional)" Width="150" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Visibility="Hidden" Click="calcDose_Click"></Button>
+                        <Button x:Name="calcDose" Content="Calculate dose (optional)" Width="150" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Visibility="Hidden" Click="CalcDose_Click"></Button>
                         <TextBox x:Name="calcDoseTB" Text="NO" IsReadOnly="True" FontWeight="Bold" TextAlignment="Center" Foreground="black" Background="Red" Width="70" Height="20" Margin="200,0,0,0" Visibility="Hidden"></TextBox>
                     </Grid>
                     <Grid Height="40" Width ="400" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0">
-                        <Button x:Name="createPlanSum" Content="Create plan sum" Width="100" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="planSum_Click" Visibility="Hidden"></Button>
+                        <Button x:Name="createPlanSum" Content="Create plan sum" Width="100" Height="25" HorizontalAlignment="Center" Margin="0,0,200,0" Click="PlanSum_Click" Visibility="Hidden"></Button>
                         <TextBox x:Name="createPlanSumTB" Text="N/A" IsReadOnly="True" FontWeight="Bold" TextAlignment="Center" Foreground="black" Width="70" Height="20" Margin="200,0,0,0" Visibility="Hidden"></TextBox>
                     </Grid>
                     <Label Content="More features coming in v16!" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,75,0,0"></Label>
@@ -112,7 +112,7 @@
                     <ScrollViewer x:Name ="configScroller" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="575" Height="382" Margin="0,0,5,7" BorderBrush="Black">
                         <TextBlock x:Name="configTB" FontSize="12" FontFamily="Courier New" Width="555" Background="White" TextWrapping="Wrap"></TextBlock>
                     </ScrollViewer>
-                    <Button x:Name="loadNewConfigFile" Content="Load new configuration file" Width="160" HorizontalAlignment="Center" Click="loadNewConfigFile_Click"></Button>
+                    <Button x:Name="loadNewConfigFile" Content="Load new configuration file" Width="160" HorizontalAlignment="Center" Click="LoadNewConfigFile_Click"></Button>
                 </StackPanel>
             </TabItem>
 
@@ -129,7 +129,7 @@
         <Grid Width="300" Height="92" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="300,77,0,0">
             <Label Content="Non-myeloablative regimen (Rx = 200 cGy):" HorizontalAlignment="Right" Margin="0,35,50,0" VerticalAlignment="Top"/>
             <Label Content="Myeloablative regimen (Rx = 1200 cGy):" HorizontalAlignment="Right" Margin="0,65,50,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="nonmyelo_chkbox" HorizontalAlignment="Right" Margin="0,41,28,0" VerticalAlignment="Top" Checked="nonMyelo_chkbox_Checked" Unchecked="nonMyelo_chkbox_Checked"/>
+            <CheckBox x:Name="nonmyelo_chkbox" HorizontalAlignment="Right" Margin="0,41,28,0" VerticalAlignment="Top" Checked="NonMyelo_chkbox_Checked" Unchecked="NonMyelo_chkbox_Checked"/>
             <CheckBox x:Name="myelo_chkbox" HorizontalAlignment="Right" Margin="0,71,28,0" VerticalAlignment="Top" Checked="Myelo_chkbox_Checked" Unchecked="Myelo_chkbox_Checked"/>
         </Grid>
 
@@ -144,7 +144,7 @@
 
         <Grid Width="600" Height="34" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,177,0,0">
             <Label Content="Add flash:" HorizontalAlignment="Right" Margin="0,5,515,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="flash_chkbox" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,11,500,0" VerticalAlignment="Top" Click="flash_chkbox_Click"/>
+            <CheckBox x:Name="flash_chkbox" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,11,500,0" VerticalAlignment="Top" Click="Flash_chkbox_Click"/>
             <ComboBox x:Name="flashOption" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,8,380,0" VerticalAlignment="Top" Width="90" Visibility="Hidden" SelectionChanged="FlashOption_SelectionChanged"/>
             <Label x:Name="flashMarginLabel" Content="Margin (cm):" HorizontalAlignment="Right" Margin="0,5,280,0" VerticalAlignment="Top" Visibility="Hidden"/>
             <TextBox x:Name="flashMarginTB" TextAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Height="21" Margin="0,8,225,0" Visibility="Hidden"></TextBox>
