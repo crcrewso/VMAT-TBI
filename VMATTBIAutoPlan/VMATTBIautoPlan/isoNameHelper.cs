@@ -49,7 +49,8 @@ namespace VMATTBIautoPlan
             return ffs.Contains(isoName);
         }
 
-
+        // TODO Get rid of the 2 parameter version
+        // TODO Move from List to array. 
 
         public static List<string> GetIsoNames(int numVMATIsos) => GetIsoNames(numVMATIsos, numVMATIsos);
 
