@@ -106,10 +106,10 @@ namespace VMATTBIautoPlan
             }
             configTB.Text += System.Environment.NewLine;
             configTB.Text += String.Format("Collimator rotation (deg) order: ");
-            for (int i = 0; i < settings.CollRot.Length; i++)
+            for (int i = 0; i < settings.TopCollRot.Length; i++)
             {
-                configTB.Text += String.Format("{0:0.0}", settings.CollRot.ElementAt(i));
-                if (i != settings.CollRot.Length - 1) configTB.Text += String.Format(", ");
+                configTB.Text += String.Format("{0:0.0}", settings.TopCollRot.ElementAt(i));
+                if (i != settings.TopCollRot.Length - 1) configTB.Text += String.Format(", ");
             }
             configTB.Text += System.Environment.NewLine;
             configTB.Text += String.Format("Field jaw position (cm) order: ") + System.Environment.NewLine;
@@ -730,7 +730,7 @@ namespace VMATTBIautoPlan
             if (settings.Linacs.Count() > 0) foreach (string s in settings.Linacs) linac_cb.Items.Add(s);
             else
             {
-                enterMissingInfo linacName = new VMATTBIautoPlan.enterMissingInfo();
+                enterMissingInfo linacName = new enterMissingInfo();
                 linacName.title.Text = "Enter the name of the linac you want to use";
                 linacName.info.Text = "Linac:";
                 linacName.ShowDialog();
@@ -846,10 +846,9 @@ namespace VMATTBIautoPlan
             else if (settings.AllVMAT && (tmp < 2 || tmp > 7)) MessageBox.Show("Error! Requested number of VMAT isocenters is less than 2 or greater than 6! Please try again!");
             else
             {
-                if (!optParameters.Where(x => x.Item1.ToLower().Contains("brain")).Any()) settings.BeamsPerIso[0]++;
                 numIsos += tmp - numVMATIsos;
                 numVMATIsos = tmp;
-                isoNames = new List<string>(new IsoNameHelper().GetIsoNames(numVMATIsos, numIsos));
+                isoNames = IsoNameHelper.GetIsoNames(numVMATIsos, numIsos);
                 PopulateBeamsTab();
             }
 
@@ -934,9 +933,9 @@ namespace VMATTBIautoPlan
                 //convert from mm to cm
                 contourOverlapMargin *= 10.0;
                 //overloaded constructor for the placeBeams class
-                place = new PlaceBeams(settings.AllVMAT, settings.ExtraIsos, settings.CheckTTCollision, selectedSS, settings.CourseId, prescription, isoNames, numIsos, numVMATIsos, singleAPPAplan, numBeams, settings.CollRot, settings.JawPos, chosenLinac, chosenEnergy, settings.CalculationModel, settings.OptimizationModel, settings.UseGPUdose, settings.UseGPUoptimization, settings.MRrestartLevel, useFlash, settings.ContourOverlapMargin);
+                place = new PlaceBeams(settings.AllVMAT, settings.ExtraIsos, settings.CheckTTCollision, selectedSS, settings.CourseId, prescription, isoNames, numIsos, numVMATIsos, singleAPPAplan, numBeams, settings.TopCollRot, settings.JawPos, chosenLinac, chosenEnergy, settings.CalculationModel, settings.OptimizationModel, settings.UseGPUdose, settings.UseGPUoptimization, settings.MRrestartLevel, useFlash, settings.ContourOverlapMargin, settings);
             }
-            else place = new PlaceBeams(settings.AllVMAT, settings.ExtraIsos, settings.CheckTTCollision, selectedSS, settings.CourseId, prescription, isoNames, numIsos, numVMATIsos, singleAPPAplan, numBeams, settings.CollRot, settings.JawPos, chosenLinac, chosenEnergy, settings.CalculationModel, settings.OptimizationModel, settings.UseGPUdose, settings.UseGPUoptimization, settings.MRrestartLevel, useFlash);
+            else place = new PlaceBeams(settings.AllVMAT, settings.ExtraIsos, settings.CheckTTCollision, selectedSS, settings.CourseId, prescription, isoNames, numIsos, numVMATIsos, singleAPPAplan, numBeams, settings.TopCollRot, settings.JawPos, chosenLinac, chosenEnergy, settings.CalculationModel, settings.OptimizationModel, settings.UseGPUdose, settings.UseGPUoptimization, settings.MRrestartLevel, useFlash, settings);
 
             VMATplan = place.Generate_beams();
             if (VMATplan == null) return;
@@ -1181,9 +1180,9 @@ namespace VMATTBIautoPlan
                 else if (opt.Item2 == "Exact") MessageBox.Show("Script not setup to handle exact dose constraints!");
                 else MessageBox.Show("Constraint type not recognized!");
             }
-            //turn on jaw tracking
-            try { VMATplan.OptimizationSetup.UseJawTracking = true; }
-            catch (Exception except) { MessageBox.Show(String.Format("Warning! Could not set jaw tracking to true for VMAT plan because: {0}\nJaw tacking will not be enabled!", except.Message)); }
+            //turn off jaw tracking
+            try { VMATplan.OptimizationSetup.UseJawTracking = false; }
+            catch (Exception except) { MessageBox.Show(String.Format("Warning! Could not set jaw tracking to false for VMAT plan because: {0}\nJaw tacking will not be enabled!", except.Message)); }
             //set auto NTO priority to zero (i.e., shut it off). It has to be done this way because every plan created in ESAPI has an instance of an automatic NTO, which CAN'T be deleted.
             VMATplan.OptimizationSetup.AddAutomaticNormalTissueObjective(0.0);
 
@@ -1191,11 +1190,6 @@ namespace VMATTBIautoPlan
                     "\n\nPlease review the generated structures, placed isocenters, placed beams, and optimization parameters! " +
                     "\n\nOnce you are satisified, save the plan, close the patient, and launch the optimization loop executable!";
             if (optParametersList.Where(x => x.Item1.ToLower().Contains("_lowres")).Any()) message += "\n\nBE SURE TO VERIFY THE ACCURACY OF THE GENERATED LOW-RESOLUTION CONTOURS!";
-            if (numIsos != 0 && numIsos != numVMATIsos)
-            {
-                //VMAT only TBI plan was created with the script in this instance info or the user wants to only set the optimization constraints
-                message += "\n\nFor the AP/PA Legs plan, be sure to change the orientation from head-first supine to feet-first supine!";
-            }
             MessageBox.Show(message);
         }
 
@@ -1320,9 +1314,7 @@ namespace VMATTBIautoPlan
                     Height = sp.Height - 5,
                     HorizontalAlignment = HorizontalAlignment.Left,
                     VerticalAlignment = VerticalAlignment.Top,
-                    Margin = new Thickness(5, 5, 0, 0),
-                    Text = defaultList[i].Item2,
-                    HorizontalContentAlignment = HorizontalAlignment.Center
+                    Margin = new Thickness(5, 5, 0, 0)
                 };
                 string[] types = new string[] { "--select--", "Upper", "Lower", "Mean", "Exact" };
                 foreach (string s in types) constraint_cb.Items.Add(s);
@@ -1728,7 +1720,7 @@ namespace VMATTBIautoPlan
                                                 line = CropLine(line, ",");
                                             }
                                             c.Add(double.Parse(line.Substring(0, line.IndexOf("}"))));
-                                            for (int i = 0; i < c.Count(); i++) { if (i < 5) settings.CollRot[i] = c.ElementAt(i); }
+                                            for (int i = 0; i < c.Count(); i++) { if (i < 5) settings.TopCollRot[i] = c.ElementAt(i); }
                                         }
                                         //other parameters that should be updated
                                         else if (parameter == "use flash by default") settings.UseFlashByDefault = bool.Parse(value);

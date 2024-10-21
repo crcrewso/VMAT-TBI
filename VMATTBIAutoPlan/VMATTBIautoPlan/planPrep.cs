@@ -125,7 +125,7 @@ namespace VMATTBIautoPlan
                 appaBeamsPerIso.Add(new List<Beam>(beams));
             }
 
-            names = new IsoNameHelper().GetIsoNames(numVMATIsos, numIsos);
+            names = IsoNameHelper.GetIsoNames(numVMATIsos, numIsos);
 
             //get the user origin in user coordinates
             VVector uOrigin = vmatPlan.StructureSet.Image.UserOrigin;

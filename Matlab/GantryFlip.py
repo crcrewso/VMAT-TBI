@@ -26,10 +26,11 @@ def main():
     flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel + "-Reversed"
     flippedPlan.SOPInstanceUID = pydicom.uid.generate_uid()
     # Plan name safety, if the plan name is too long it will be cut
-    if (len(flippedPlan.RTPlanLabel) > 16):
-        flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel[0:11] + "-Rev"
+    if (len(flippedPlan.RTPlanLabel) > 15):
+        flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel[0:10] + "-Rev"
 
     for i in range(len(referencePlan.BeamSequence)):
+        # Skip static/setup beams
         if (referencePlan.BeamSequence[i].BeamType == 'STATIC'):
             print('Static Beam Detected. Skipping...')
             continue

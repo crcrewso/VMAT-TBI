@@ -56,54 +56,54 @@ namespace VMATTBIautoPlan
 
         public static List<string> GetIsoNames(int numVMATIsos, int numIsos)
         {
-            List<string> isoNames = new List<string> { };
+            List<string> ret = new List<string> { };
             switch (numVMATIsos)
             {
                 case 2:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[3]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[3]);
                     break;
                 case 3:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[3]);
-                    isoNames.Add(isoNames[4]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[3]);
+                    ret.Add(isoNames[4]);
                     break;
                 case 4:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[1]);
-                    isoNames.Add(isoNames[3]);
-                    isoNames.Add(isoNames[4]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[1]);
+                    ret.Add(isoNames[3]);
+                    ret.Add(isoNames[4]);
                     break;
                 case 5:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[1]);
-                    isoNames.Add(isoNames[3]);
-                    isoNames.Add(isoNames[5]);
-                    isoNames.Add(isoNames[6]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[1]);
+                    ret.Add(isoNames[3]);
+                    ret.Add(isoNames[5]);
+                    ret.Add(isoNames[6]);
                     break;
                 case 6:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[1]);
-                    isoNames.Add(isoNames[3]);
-                    isoNames.Add(isoNames[5]);
-                    isoNames.Add(isoNames[6]);
-                    isoNames.Add(isoNames[7]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[1]);
+                    ret.Add(isoNames[3]);
+                    ret.Add(isoNames[5]);
+                    ret.Add(isoNames[6]);
+                    ret.Add(isoNames[7]);
                     break;
                 case 7:
-                    isoNames.Add(isoNames[0]);
-                    isoNames.Add(isoNames[1]);
-                    isoNames.Add(isoNames[2]);
-                    isoNames.Add(isoNames[3]);
-                    isoNames.Add(isoNames[5]);
-                    isoNames.Add(isoNames[6]);
-                    isoNames.Add(isoNames[7]);
+                    ret.Add(isoNames[0]);
+                    ret.Add(isoNames[1]);
+                    ret.Add(isoNames[2]);
+                    ret.Add(isoNames[3]);
+                    ret.Add(isoNames[5]);
+                    ret.Add(isoNames[6]);
+                    ret.Add(isoNames[7]);
                     break;
                 default:
                     for (int i = 0; i < numIsos; i++)
-                        isoNames.Add("Iso " + i);
+                        ret.Add("Iso " + i);
                     break;
             }
-            return isoNames;
+            return ret;
         }
     }
 }

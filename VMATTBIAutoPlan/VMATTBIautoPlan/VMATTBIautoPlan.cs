@@ -27,7 +27,7 @@ namespace VMS.TPS
             string configFile = "";
             //grab the configuration file in the excuting assembly location
             if (File.Exists(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\configuration\\VMAT_TBI_config.ini")) configFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\configuration\\VMAT_TBI_config.ini";
-            VMATTBIautoPlan.UI ui = new VMATTBIautoPlan.UI(context, configFile);
+            VMATTBIautoPlan.UI ui = new VMATTBIautoPlan.UI(context);
             Window wi = new Window();
             wi.Height = 735;
             wi.Width = 608;

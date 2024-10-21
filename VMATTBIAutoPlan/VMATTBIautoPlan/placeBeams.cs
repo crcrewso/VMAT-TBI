@@ -29,8 +29,6 @@ namespace VMATTBIautoPlan
         string courseId = "";
         Course tbi;
         public ExternalPlanSetup plan = null;
-        ExternalPlanSetup legs_planUpper = null;
-
         double[] collRot;
         double[] CW = { 181.0, 179.0 };
         double[] CCW = { 179.0, 181.0 };
@@ -47,8 +45,11 @@ namespace VMATTBIautoPlan
         private bool contourOverlap = false;
         private double contourOverlapMargin;
         public List<Structure> jnxs = new List<Structure> { };
+        Settings settings;
 
-        public PlaceBeams(bool vmat, int extra, bool collision, StructureSet ss, string cid, Tuple<int, DoseValue> presc, List<string> i, int iso, int vmatIso, bool appaPlan, int[] beams, double[] coll, List<VRect<double>> jp, string linac, string energy, string calcModel, string optModel, string gpuDose, string gpuOpt, string mr, bool flash)
+
+        //TODO: Fix constructor, too many parameters, use Settings class
+        public PlaceBeams(bool vmat, int extra, bool collision, StructureSet ss, string cid, Tuple<int, DoseValue> presc, List<string> i, int iso, int vmatIso, bool appaPlan, int[] beams, double[] coll, List<VRect<double>> jp, string linac, string energy, string calcModel, string optModel, string gpuDose, string gpuOpt, string mr, bool flash, Settings settings)
         {
             allVMAT = vmat;
             extraIsocenters = extra;
@@ -73,9 +74,12 @@ namespace VMATTBIautoPlan
             useGPUoptimization = gpuOpt;
             MRrestart = mr;
             useFlash = flash;
+            this.settings = settings;
         }
 
-        public PlaceBeams(bool vmat, int extra, bool collision, StructureSet ss, string cid, Tuple<int, DoseValue> presc, List<string> i, int iso, int vmatIso, bool appaPlan, int[] beams, double[] coll, List<VRect<double>> jp, string linac, string energy, string calcModel, string optModel, string gpuDose, string gpuOpt, string mr, bool flash, double overlapMargin)
+        //TODO: Fix constructor, too many parameters, use Settings class
+
+        public PlaceBeams(bool vmat, int extra, bool collision, StructureSet ss, string cid, Tuple<int, DoseValue> presc, List<string> i, int iso, int vmatIso, bool appaPlan, int[] beams, double[] coll, List<VRect<double>> jp, string linac, string energy, string calcModel, string optModel, string gpuDose, string gpuOpt, string mr, bool flash, double overlapMargin, Settings settings)
         {
             allVMAT = vmat;
             extraIsocenters = extra;
@@ -102,6 +106,7 @@ namespace VMATTBIautoPlan
             //user wants to contour the overlap between fields in adjacent VMAT isocenters
             contourOverlap = true;
             contourOverlapMargin = overlapMargin;
+            this.settings = settings;
         }
 
         public ExternalPlanSetup Generate_beams()
@@ -201,7 +206,6 @@ namespace VMATTBIautoPlan
             //v16 of Eclipse allows for the creation of a plan with a named target structure and named primary reference point. Neither of these options are available in v15
             //plan.TargetVolumeID = selectedSS.Structures.First(x => x.Id == "TS_PTV_VMAT");
             //plan.PrimaryReferencePoint = plan.ReferencePoints.Fisrt(x => x.Id == "VMAT TBI");
-
             return false;
         }
 
@@ -354,13 +358,21 @@ namespace VMATTBIautoPlan
             DRR.SetLayerParameters(1, 1.0, 100.0, 1000.0);
 
             //place the beams for the VMAT plan
-            //unfortunately, all of Nataliya's requirements for beam placement meant that this process couldn't simply draw from beam placement templates. Some of the beam placements for specific isocenters
-            //and under certain conditions needed to be hard-coded into the script. I'm not really a fan of this, but it was the only way to satisify Nataliya's requirements.
             int count = 0;
             string beamName;
             VRect<double> jp;
             for (int i = 0; i < numVMATIsos; i++)
             {
+                var isoName = isoNames.ElementAt(i);
+                double[] collimatorRotations;
+                if (IsoNameHelper.IsTop(isoName))
+                {
+                    collimatorRotations = settings.TopCollRot;
+                }
+                else {
+                    collimatorRotations = settings.BottomCollRot;
+                }
+                
                 for (int j = 0; j < numBeams[i]; j++)
                 {
                     //second isocenter and third beam requires the x-jaw positions to be mirrored about the y-axis (these jaw positions are in the fourth element of the jawPos list)
@@ -372,41 +384,25 @@ namespace VMATTBIautoPlan
                     beamName = "";
                     beamName += String.Format("{0} ", count + 1);
                     //zero collimator rotations of two main fields for beams in isocenter immediately superior to matchline. Adjust the third beam such that collimator rotation is 90 degrees. Do not adjust 4th beam
-                    double coll = collRot[j];
+                    double coll = collimatorRotations[j];
                     // for allVMAT, if legs are present, last two isos have their collimator positions rotated 180 degrees
-                    if (allVMAT && i > 2)
-                    {
-                        // correction so shift doesn't result in unrealistic collimator position
-                        if (coll < 6)
-                            coll += 5;
-                        else if (coll > 354)
-                            coll -= 5;
-                        // rotation of 180 
-                        coll = (coll + 180) % 360;
 
-                    }
-
-                    if ((numIsos > numVMATIsos) && (i == (numVMATIsos - 1)))
-                    {
-                        if (j < 2) coll = 0.0;
-                        else if (j == 2) coll = 90.0;
-                    }
                     //all even beams (e.g., 2, 4, etc.) will be CCW and all odd beams will be CW
                     if (count % 2 == 0)
                     {
                         //if(allVMAT && i >= numVMATIsos - extraIsocenters) b = plan.AddArcBeam(ebmpArc6X, jp, coll, CCW[0], CCW[1], GantryDirection.CounterClockwise, 0, isoLocations.ElementAt(i));
                         //else b = plan.AddArcBeam(ebmpArc, jp, coll, CCW[0], CCW[1], GantryDirection.CounterClockwise, 0, isoLocations.ElementAt(i));
                         b = plan.AddArcBeam(ebmpArc, jp, coll, CCW[0], CCW[1], GantryDirection.CounterClockwise, 0, isoLocations.ElementAt(i));
-                        if (j >= 2) beamName += String.Format("CCW {0}{1}", isoNames.ElementAt(i), 90);
-                        else beamName += String.Format("CCW {0}{1}", isoNames.ElementAt(i), "");
+                        if (j >= 2) beamName += String.Format("CCW {0}{1}", isoName, 90);
+                        else beamName += String.Format("CCW {0}{1}", isoName, "");
                     }
                     else
                     {
                         //if (allVMAT && i >= numVMATIsos - extraIsocenters) b = plan.AddArcBeam(ebmpArc6X, jp, coll, CW[0], CW[1], GantryDirection.Clockwise, 0, isoLocations.ElementAt(i));
                         //else b = plan.AddArcBeam(ebmpArc, jp, coll, CW[0], CW[1], GantryDirection.Clockwise, 0, isoLocations.ElementAt(i));
                         b = plan.AddArcBeam(ebmpArc, jp, coll, CW[0], CW[1], GantryDirection.Clockwise, 0, isoLocations.ElementAt(i));
-                        if (j >= 2) beamName += String.Format("CW {0}{1}", isoNames.ElementAt(i), 90);
-                        else beamName += String.Format("CW {0}{1}", isoNames.ElementAt(i), "");
+                        if (j >= 2) beamName += String.Format("CW {0}{1}", isoName, 90);
+                        else beamName += String.Format("CW {0}{1}", isoName, "");
                     }
                     if (beamName.Length > 16) b.Id = beamName.Substring(0, 16);
                     else b.Id = beamName;

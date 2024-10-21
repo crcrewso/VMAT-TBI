@@ -48,7 +48,8 @@ namespace VMATTBIautoPlan
         //default number of beams per isocenter from head to toe
         public readonly int[] BeamsPerIso = { 3, 4, 4, 2, 2, 2, 2 };
         //collimator rotations for how to orient the beams (placeBeams class)
-        public readonly double[] CollRot = { 3.0, 357.0, 87.0, 93.0 };
+        public readonly double[] TopCollRot = { 3.0, 357.0, 87.0, 93.0, 45.0, 315.0 };
+        public readonly double[] BottomCollRot = { 175.0, 185.0, 135.0, 225.0 };
         //jaw positions of the placed VMAT beams
         public readonly List<VRect<double>> JawPos = new List<VRect<double>> {
             new VRect<double>(-20.0, -200.0, 200.0, 200.0),
@@ -65,12 +66,15 @@ namespace VMATTBIautoPlan
         public readonly string UseGPUoptimization = "false";
         //what MR level should the optimizer restart at following intermediate dose calculation
         public readonly string MRrestartLevel = "MR3";
+        // options are MR3 or MR4
         // TODO Add a setting for the MLC aperture shape controller (Moderate)
+        public readonly string ApertureShapeController = "Moderate";
+        // options are 'Very Low', 'Low', 'Moderate', 'High', 'Very High' 
+        // not sure how spaces are handled
 
 
 
-
-
+        #region Accessor Properties
         // Sclero
         public double ScleroDosePerFx { get { return scleroDosePerFx; } }
         public int ScleroNumFx { get { return scleroNumFx; } }
@@ -97,7 +101,7 @@ namespace VMATTBIautoPlan
         public List<Tuple<string, string, double>> MyeloSpareStruct { get { return myeloSpareStruct; } }
         public List<Tuple<string, string, double>> NonMyeloSpareStruct { get { return nonmyeloSpareStruct; } }
 
-
+        #endregion
 
 
         #region sclero
