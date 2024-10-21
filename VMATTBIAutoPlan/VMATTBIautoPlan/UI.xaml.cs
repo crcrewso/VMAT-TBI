@@ -1326,6 +1326,8 @@ namespace VMATTBIautoPlan
                 };
                 string[] types = new string[] { "--select--", "Upper", "Lower", "Mean", "Exact" };
                 foreach (string s in types) constraint_cb.Items.Add(s);
+                constraint_cb.Text = defaultList[i].Item2;
+                constraint_cb.HorizontalContentAlignment = HorizontalAlignment.Center;
                 sp.Children.Add(constraint_cb);
 
                 //the order of the dose and volume values are switched when they are displayed to the user. This way, the optimization objective appears to the user as it would in the optimization workspace.
