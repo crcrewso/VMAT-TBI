@@ -180,7 +180,8 @@ namespace VMATTBIautoPlan
             else plan.SetCalculationOption(calculationModel, "UseGPU", "No");
 
             //set MR restart level option for the photon optimization
-            plan.SetCalculationOption(optimizationModel, "VMAT/MRLevelAtRestart", MRrestart);
+            plan.SetCalculationOption(optimizationModel, "MRLevelAtRestart", MRrestart);
+            plan.SetCalculationOption(optimizationModel, "ApertureShapeController", "Moderate");
 
             //set the GPU optimization option
             if (useGPUoptimization == "Yes") plan.SetCalculationOption(optimizationModel, "General/OptimizerSettings/UseGPU", useGPUoptimization);
