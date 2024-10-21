@@ -12,12 +12,12 @@ namespace VMATTBIautoPlan
 
         static readonly string[] isoNames = new string[] { "Head", "Thorax", "Abdomen", "Pelvis", "Legs", "Legs_Sup", "Legs_Inf", "Feet" };
 
-        static readonly string[] top = isoNames.Take(4).ToArray();
-        static readonly string[] bottom = isoNames.Skip(4).ToArray();
+        static readonly string[] hfs = isoNames.Take(4).ToArray();
+        static readonly string[] ffs = isoNames.Skip(4).ToArray();
 
-        public static bool IsTop(string isoName)
+        public static bool IsHFS(string isoName)
         {
-            return top.Contains(isoName);
+            return hfs.Contains(isoName);
         }
 
         /// <summary>
@@ -27,9 +27,9 @@ namespace VMATTBIautoPlan
         /// <returns></returns>
         public static string Orientation(string isoName)
         {
-            if (IsTop(isoName))
+            if (IsHFS(isoName))
                 return "Head First-Supine";
-            else if ( IsBottom(isoName) )
+            else if ( IsFFS(isoName) )
             {
                 return "Feet First-Supine";
             }
@@ -44,9 +44,9 @@ namespace VMATTBIautoPlan
 
 
 
-        public static bool IsBottom(string isoName)
+        public static bool IsFFS(string isoName)
         {
-            return bottom.Contains(isoName);
+            return ffs.Contains(isoName);
         }
 
 
@@ -56,54 +56,60 @@ namespace VMATTBIautoPlan
 
         public static List<string> GetIsoNames(int numVMATIsos, int numIsos)
         {
-            List<string> ret = new List<string> { };
             switch (numVMATIsos)
             {
                 case 2:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[3]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[3] 
+                    };                    
                 case 3:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[3]);
-                    ret.Add(isoNames[4]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[3], 
+                        isoNames[4] 
+                    };
                 case 4:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[1]);
-                    ret.Add(isoNames[3]);
-                    ret.Add(isoNames[4]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[1], 
+                        isoNames[3], 
+                        isoNames[4] 
+                    };
                 case 5:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[1]);
-                    ret.Add(isoNames[3]);
-                    ret.Add(isoNames[5]);
-                    ret.Add(isoNames[6]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[1], 
+                        isoNames[3], 
+                        isoNames[5], 
+                        isoNames[6] 
+                    };
                 case 6:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[1]);
-                    ret.Add(isoNames[3]);
-                    ret.Add(isoNames[5]);
-                    ret.Add(isoNames[6]);
-                    ret.Add(isoNames[7]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[1], 
+                        isoNames[3], 
+                        isoNames[5], 
+                        isoNames[6], 
+                        isoNames[7] 
+                    };
                 case 7:
-                    ret.Add(isoNames[0]);
-                    ret.Add(isoNames[1]);
-                    ret.Add(isoNames[2]);
-                    ret.Add(isoNames[3]);
-                    ret.Add(isoNames[5]);
-                    ret.Add(isoNames[6]);
-                    ret.Add(isoNames[7]);
-                    break;
+                    return new List<string> { 
+                        isoNames[0], 
+                        isoNames[1], 
+                        isoNames[2], 
+                        isoNames[3], 
+                        isoNames[5], 
+                        isoNames[6], 
+                        isoNames[7] 
+                    };
+
                 default:
+                    List<string> ret = new List<string> { };
                     for (int i = 0; i < numIsos; i++)
                         ret.Add("Iso " + i);
-                    break;
+                    return ret;
             }
-            return ret;
         }
     }
 }

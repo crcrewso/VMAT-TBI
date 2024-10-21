@@ -24,24 +24,24 @@ namespace VMATTBIautoPlan.Tests
         [TestMethod()]
         public void IsTopTest_Head()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Head));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Head));
         }
 
         [TestMethod()]
         public void IsTopTest_Thorax()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Thorax));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Thorax));
         }
 
         [TestMethod()]
         public void IsTopTest_Abdomen()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Abdomen));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Abdomen));
         }
         [TestMethod()]
         public void IsTopTest_Pelvis()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Pelvis));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Pelvis));
         }
 
 
@@ -49,22 +49,22 @@ namespace VMATTBIautoPlan.Tests
         [TestMethod()]
         public void IsNotBottomTest_Head()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Thorax));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Thorax));
         }
         [TestMethod()]
         public void IsNotBottomTest_Thorax()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Thorax));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Thorax));
         }
         [TestMethod()]
         public void IsNotBottomTest_Abdomen()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Abdomen));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Abdomen));
         }
         [TestMethod()]
         public void IsNotBottomTest_Pelvis()
         {
-            Assert.IsTrue(IsoNameHelper.IsTop(Pelvis));
+            Assert.IsTrue(IsoNameHelper.IsHFS(Pelvis));
         }
 
         #endregion
@@ -74,46 +74,46 @@ namespace VMATTBIautoPlan.Tests
         [TestMethod()]
         public void IsNotTop_Legs()
         {
-            Assert.IsFalse(IsoNameHelper.IsTop(Legs));
+            Assert.IsFalse(IsoNameHelper.IsHFS(Legs));
         }
 
         [TestMethod()]
         public void IsNotTop_Legs_Sup()
         {
-            Assert.IsFalse(IsoNameHelper.IsTop(Legs_Sup));
+            Assert.IsFalse(IsoNameHelper.IsHFS(Legs_Sup));
         }
 
         [TestMethod()]
         public void IsNotTop_Legs_Inf()
         {
-            Assert.IsFalse(IsoNameHelper.IsTop(Legs_Inf));
+            Assert.IsFalse(IsoNameHelper.IsHFS(Legs_Inf));
         }
 
         [TestMethod()]
         public void IsNotTop_Feet()
         {
-            Assert.IsFalse(IsoNameHelper.IsTop(Feet));
+            Assert.IsFalse(IsoNameHelper.IsHFS(Feet));
         }
 
         [TestMethod()]
         public void IsBottomTest_Legs()
         {
-            Assert.IsTrue(IsoNameHelper.IsBottom(Legs));
+            Assert.IsTrue(IsoNameHelper.IsFFS(Legs));
         }
         [TestMethod()]
         public void IsBottomTest_Legs_Sup()
         {
-            Assert.IsTrue(IsoNameHelper.IsBottom(Legs_Sup));
+            Assert.IsTrue(IsoNameHelper.IsFFS(Legs_Sup));
         }
         [TestMethod()]
         public void IsBottomTest_Legs_Inf()
         {
-            Assert.IsTrue(IsoNameHelper.IsBottom(Legs_Inf));
+            Assert.IsTrue(IsoNameHelper.IsFFS(Legs_Inf));
         }
         [TestMethod()]
         public void IsBottomTest_Feet()
         {
-            Assert.IsTrue(IsoNameHelper.IsBottom(Feet));
+            Assert.IsTrue(IsoNameHelper.IsFFS(Feet));
         }
 
         #endregion

@@ -365,7 +365,7 @@ namespace VMATTBIautoPlan
             {
                 var isoName = isoNames.ElementAt(i);
                 double[] collimatorRotations;
-                if (IsoNameHelper.IsTop(isoName))
+                if (IsoNameHelper.IsHFS(isoName))
                 {
                     collimatorRotations = settings.TopCollRot;
                 }
