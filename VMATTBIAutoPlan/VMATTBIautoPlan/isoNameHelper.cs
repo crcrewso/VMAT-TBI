@@ -20,6 +20,28 @@ namespace VMATTBIautoPlan
             return hfs.Contains(isoName);
         }
 
+        public static bool IsHFSLong(string isoName)
+        {
+            for (int i = 0; i < hfs.Length; i++)
+            {
+                if (isoName.Contains(hfs[i]))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// The treatment order for HFS is Head, Thorax, Abdomen, Pelvis
+        /// </summary>
+        public static string[] HFSorder => hfs;
+
+        /// <summary>
+        /// The treatment order for FFS is feet, legs_inf, legs_sup, or legs
+        /// </summary>
+        public static string[] FFSorder => ffs.Reverse().ToArray();
+
+
+
         /// <summary>
         /// Returns the DICOM label of the orientation of the isocenter based on the isoName
         /// </summary>

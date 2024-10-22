@@ -46,7 +46,7 @@ namespace VMATTBIautoPlan
             bool beamFormatError = false;
             foreach (Beam b in vmatPlan.Beams.Where(x => !x.IsSetupField))
             {
-                if(! int.TryParse(b.Id.Substring(0, 2).ToString(), out int dummy))
+                if (!int.TryParse(b.Id.Substring(0, 2).ToString(), out int dummy))
                 {
                     beamFormatMessage += b.Id + Environment.NewLine;
                     if (!beamFormatError) beamFormatError = true;
@@ -59,7 +59,7 @@ namespace VMATTBIautoPlan
                     if (!int.TryParse(b.Id.Substring(0, 2).ToString(), out int dummy))
                     {
                         beamFormatMessage += b.Id + Environment.NewLine;
-                        if(!beamFormatError) beamFormatError = true;
+                        if (!beamFormatError) beamFormatError = true;
                     }
                 }
             }
@@ -71,11 +71,11 @@ namespace VMATTBIautoPlan
             }
 
             List<Beam> beams = new List<Beam> { };
-            foreach (Beam b in vmatPlan.Beams.Where(x => !x.IsSetupField).OrderBy(o => int.Parse(o.Id.Substring(0,2).ToString())))
+            foreach (Beam b in vmatPlan.Beams.Where(x => !x.IsSetupField).OrderBy(o => int.Parse(o.Id.Substring(0, 2).ToString())))
             {
                 VVector v = b.IsocenterPosition;
                 v = vmatPlan.StructureSet.Image.DicomToUser(v, vmatPlan);
-                IEnumerable<Tuple<double,double,double>> d = isoPositions.Where(k => k.Item3 == v.z);
+                IEnumerable<Tuple<double, double, double>> d = isoPositions.Where(k => k.Item3 == v.z);
                 if (!d.Any())
                 {
                     isoPositions.Add(Tuple.Create(v.x, v.y, v.z));
@@ -96,12 +96,12 @@ namespace VMATTBIautoPlan
             //add the beams from the last isocenter to the vmat beams per iso list
             vmatBeamsPerIso.Add(new List<Beam>(beams));
             beams.Clear();
-            
+
 
             //copy number of vmat isocenters determined above onto the total number of isos
             numIsos = numVMATIsos;
             //if the ap/pa plan is NOT null, then get the isocenter position(s) of those beams as well. Do the same thing as above
-            foreach(ExternalPlanSetup p in appaPlan)
+            foreach (ExternalPlanSetup p in appaPlan)
             {
                 foreach (Beam b in p.Beams.Where(x => !x.IsSetupField).OrderBy(o => int.Parse(o.Id.Substring(0, 2).ToString())))
                 {
@@ -113,7 +113,7 @@ namespace VMATTBIautoPlan
                         //zPositions.Add(v.z);
                         isoPositions.Add(Tuple.Create(v.x, v.y, v.z));
                         numIsos++;
-                        if(numIsos - numVMATIsos > 1)
+                        if (numIsos - numVMATIsos > 1)
                         {
                             //same as above
                             appaBeamsPerIso.Add(new List<Beam>(beams));
@@ -139,7 +139,7 @@ namespace VMATTBIautoPlan
             foreach (Tuple<double, double, double> pos in isoPositions)
             {
                 //each zPosition inherently represents the shift from CT ref in User coordinates
-                Tuple<double,double,double> CTrefShifts = Tuple.Create(pos.Item1 / 10, pos.Item2 / 10 , pos.Item3 / 10);
+                Tuple<double, double, double> CTrefShifts = Tuple.Create(pos.Item1 / 10, pos.Item2 / 10, pos.Item3 / 10);
                 //copy shift from CT ref to sup-inf shifts for first element, otherwise calculate the separation between the current and previous iso (from sup to inf direction)
                 //calculate the relative shifts between isocenters (the first isocenter is the CTrefShift)
                 if (count == 0)
@@ -162,7 +162,7 @@ namespace VMATTBIautoPlan
             //convert the user origin back to dicom coordinates
             uOrigin = vmatPlan.StructureSet.Image.UserToDicom(uOrigin, vmatPlan);
 
-            
+
             //grab the couch surface
             Structure couchSurface = vmatPlan.StructureSet.Structures.FirstOrDefault(x => x.Id.ToLower() == "couchsurface");
             double TT = 0;
@@ -221,7 +221,7 @@ namespace VMATTBIautoPlan
         {
             // TODO: Simplify this logic for vmat only 
             //check for setup fields in the vmat and AP/PA plans
-            if(!vmatPlan.Beams.Where(x => x.IsSetupField).Any() || (appaPlan.Count() > 0 && !legsSeparated && !appaPlan.First().Beams.Where(x => x.IsSetupField).Any()))
+            if (!vmatPlan.Beams.Where(x => x.IsSetupField).Any() || (appaPlan.Count() > 0 && !legsSeparated && !appaPlan.First().Beams.Where(x => x.IsSetupField).Any()))
             {
                 string problemPlan = "";
                 if (!vmatPlan.Beams.Where(x => x.IsSetupField).Any()) problemPlan = "VMAT plan";
@@ -239,12 +239,12 @@ namespace VMATTBIautoPlan
                 CUI.message.Text = "I found some structures in the structure set for generating flash." + Environment.NewLine + Environment.NewLine + "Do you want me to remove them?!";
                 CUI.button1.Text = "No";
                 CUI.ShowDialog();
-                if (CUI.confirm) if(RemoveFlashStr()) return true;
+                if (CUI.confirm) if (RemoveFlashStr()) return true;
             }
             //counter for indexing names
             int count = 0;
             //loop through the list of beams in each isocenter
-            foreach(List<Beam> beams in vmatBeamsPerIso)
+            foreach (List<Beam> beams in vmatBeamsPerIso)
             {
                 //string message = "";
                 //foreach (Beam b in beams) message += b.Id + "\n";
@@ -252,14 +252,18 @@ namespace VMATTBIautoPlan
 
                 //copy the plan, set the plan id based on the counter, and make a empty list to hold the beams that need to be removed
                 ExternalPlanSetup newplan = (ExternalPlanSetup)vmatPlan.Course.CopyPlanSetup(vmatPlan);
-                newplan.Id = String.Format("{0} {1}", count + 1, names.ElementAt(count));
+                int index = count + 1;
+                if (! IsoNameHelper.IsHFSLong(names.ElementAt(count))) // fix plan ID for FFS plans
+                    index = vmatBeamsPerIso.Count - count;
+                newplan.Id = String.Format("0{0} {1}", index, names.ElementAt(count));
+
                 List<Beam> removeMe = new List<Beam> { };
                 //can't add reference point to plan because it must be open in Eclipse for ESAPI to perform this function. Need to fix in v16
                 //newplan.AddReferencePoint(newplan.StructureSet.Structures.First(x => x.Id.ToLower() == "ptv_body"), null, newplan.Id, newplan.Id);
                 //add the current plan copy to the separatedPlans list
                 separatedPlans.Add(newplan);
                 //loop through each beam in the plan copy and compare it to the list of beams in the current isocenter
-                foreach(Beam b in newplan.Beams)
+                foreach (Beam b in newplan.Beams)
                 {
                     //if the current beam in newPlan is NOT found in the beams list, add it to the removeMe list. This logic has to be applied. You can't directly remove the beams in this loop as ESAPI will
                     //complain that the enumerable that it is using to index the loop changes on each iteration (i.e., newplan.Beams changes with each iteration). Do NOT add setup beams to the removeMe list. The
@@ -269,32 +273,56 @@ namespace VMATTBIautoPlan
                 }
                 //now remove the beams for the current plan copy
                 try { foreach (Beam b in removeMe) newplan.RemoveBeam(b); }
-                catch (Exception e) { MessageBox.Show(String.Format("Failed to remove beams in plan {0} because:\n{1}",newplan.Id,e.Message)); }
+                catch (Exception e) { MessageBox.Show(String.Format("Failed to remove beams in plan {0} because:\n{1}", newplan.Id, e.Message)); }
                 count++;
             }
 
-            //do the same as above, but for the AP/PA legs plan
-            if (!legsSeparated)
+
+            // HACK bad attempt at reordering the plan names
+            /*
+            string[] planIds = separatedPlans.Select(x => x.Id).ToArray();
+            int ffsStarts = 0;
+
+            // determine the index of the first FFS plan
+            for (int i = 0; i < planIds.Length; i++)
             {
-                foreach (List<Beam> beams in appaBeamsPerIso)
+                foreach (var name in IsoNameHelper.HFSorder)
                 {
-                    //string message = "";
-                    //foreach (Beam b in beams) message += b.Id + "\n";
-                    //MessageBox.Show(message);
-                    ExternalPlanSetup newplan = (ExternalPlanSetup)appaPlan.First().Course.CopyPlanSetup(appaPlan.First());
-                    List<Beam> removeMe = new List<Beam> { };
-                    newplan.Id = String.Format("{0} {1}", count + 1, (names.ElementAt(count).Contains("upper") ? "Upper Legs" : "Lower Legs"));
-                    //newplan.AddReferencePoint(newplan.StructureSet.Structures.First(x => x.Id.ToLower() == "ptv_body"), null, newplan.Id, newplan.Id);
-                    separatedPlans.Add(newplan);
-                    foreach (Beam b in newplan.Beams)
+                    if (planIds[i].Contains(name))
                     {
-                        //if the current beam in newPlan is NOT found in the beams list, then remove it from the current new plan
-                        if (!beams.Where(x => x.Id == b.Id).Any() && !b.IsSetupField) removeMe.Add(b);
+                        ffsStarts = i + 1;
                     }
-                    foreach (Beam b in removeMe) newplan.RemoveBeam(b);
-                    count++;
+                    else
+                        break;
                 }
             }
+
+            int ffsIndex = ffsStarts;
+            // replace index for FFS plans
+            for (int i = planIds.Length - 1; i == 0; i--)
+            {
+
+                foreach (var name in IsoNameHelper.FFSorder)
+                {
+                    if (planIds[i].Contains(name))
+                    {
+                        planIds[i] = "0" + ffsIndex + " " + planIds[i];
+                        
+                    }
+                }
+                ffsIndex++;
+
+
+            }
+
+            // actually replace plan names
+            for (int i = 0; i < separatedPlans.Count; i++)
+            {
+                separatedPlans[i].Id = planIds[i];
+            }
+
+            */
+
             //inform the user it's done
             string message = "Original plan(s) have been separated! \r\nBe sure to set the target volume and primary reference point!\r\n";
             if (vmatPlan.Beams.Where(x => x.IsSetupField).Any() || (appaPlan.Count() > 0 && !legsSeparated && appaPlan.First().Beams.Where(x => x.IsSetupField).Any()))
@@ -307,7 +335,7 @@ namespace VMATTBIautoPlan
         {
             //look in the structure set to see if any of the structures contain the string 'flash'. If so, return true indicating flash was included in this plan
             IEnumerable<Structure> flashStr = vmatPlan.StructureSet.Structures.Where(x => x.Id.ToLower().Contains("flash"));
-            if(flashStr.Any()) foreach (Structure s in flashStr) if (!s.IsEmpty) return true;
+            if (flashStr.Any()) foreach (Structure s in flashStr) if (!s.IsEmpty) return true;
             return false;
         }
 
@@ -357,12 +385,12 @@ namespace VMATTBIautoPlan
                 p.ClearCalculationModel(CalculationType.PhotonVolumeDose);
                 p.SetCalculationModel(CalculationType.PhotonVolumeDose, calcModel);
             }
-            IEnumerable <Structure> flashStr = ss.Structures.Where(x => x.Id.ToLower().Contains("flash"));
+            IEnumerable<Structure> flashStr = ss.Structures.Where(x => x.Id.ToLower().Contains("flash"));
             List<Structure> removeMe = new List<Structure> { };
             //can't remove directly from flashStr because the vector size would change on each loop iteration
-            foreach (Structure s in flashStr) if (!s.IsEmpty) if(ss.CanRemoveStructure(s)) removeMe.Add(s);
+            foreach (Structure s in flashStr) if (!s.IsEmpty) if (ss.CanRemoveStructure(s)) removeMe.Add(s);
             foreach (Structure s in removeMe) ss.RemoveStructure(s);
-            
+
             //from the generateTS class, the human_body structure was a copy of the body structure BEFORE flash was added. Therefore, if this structure still exists, we can just copy it back onto the body
             Structure bodyCopy = ss.Structures.FirstOrDefault(x => x.Id.ToLower() == "human_body");
             if (bodyCopy != null && !bodyCopy.IsEmpty)
@@ -373,14 +401,14 @@ namespace VMATTBIautoPlan
             }
             else MessageBox.Show("WARNING 'HUMAN_BODY' STRUCTURE NOT FOUND! BE SURE TO RE-CONTOUR THE BODY STRUCTURE!");
             flashRemoved = true;
-            
+
             return false;
         }
 
         public void CalculateDose()
         {
             //loop through each plan in the separatedPlans list (generated in the separate method above) and calculate dose for each plan
-            foreach(ExternalPlanSetup p in separatedPlans) p.CalculateDose();
+            foreach (ExternalPlanSetup p in separatedPlans) p.CalculateDose();
         }
     }
 }

@@ -16,7 +16,7 @@ def main():
                         gooey_options={'wildcard': "DICOM Files (*.dcm)|*.dcm", 'default_dir': default_dir})
     args = parser.parse_args()
     sourceFile = args.InputFile
-    saveFile = sourceFile.replace('.dcm', '-Flipped.dcm')
+    saveFile = sourceFile.replace('.dcm', '-Flipped-ffs.dcm')
     filename = os.path.basename(sourceFile)
     path = os.path.dirname(sourceFile)
     referencePlan = pydicom.dcmread(sourceFile)
@@ -28,6 +28,10 @@ def main():
     # Plan name safety, if the plan name is too long it will be cut
     if (len(flippedPlan.RTPlanLabel) > 15):
         flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel[0:10] + "-Rev"
+
+    orientation = flippedPlan[0x300A,0x0180].value
+    for i in range(len(orientation)):
+        orientation[i][0x0018, 0x5100].value = "FFS"
 
     for i in range(len(referencePlan.BeamSequence)):
         # Skip static/setup beams
