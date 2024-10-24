@@ -37,7 +37,7 @@ namespace VMATTBIautoPlan
         }
 
         // TODO: This is a mess, get better logic to describe the shifts
-        public bool GetShiftNote()
+        public bool GetShiftNote(bool copyToClibboard = true)
         {
             //loop through each beam in the vmat plan, grab the isocenter position of the beam. Compare the z position of each isocenter to the list of z positions in the vector. 
             //If no match is found, this is a new isocenter. Add it to the stack. If it is not unique, this beam belongs to an existing isocenter group --> ignore it
@@ -211,14 +211,20 @@ namespace VMATTBIautoPlan
                 else message += String.Format("{0} iso shift from {1} iso = {2:0.0} cm {3} ({4:0.0} cm {5} from CT ref)\r\n", shifts.ElementAt(i).Item1, shifts.ElementAt(i - 1).Item1, Math.Abs(shifts.ElementAt(i).Item3.Item3), shifts.ElementAt(i).Item3.Item3 > 0 ? "INF" : "SUP", Math.Abs(shifts.ElementAt(i).Item2.Item3), shifts.ElementAt(i).Item2.Item3 > 0 ? "INF" : "SUP");
             }
 
+            if (copyToClibboard)
             //copy to clipboard and inform the user it's done
-            Clipboard.SetText(message);
-            MessageBox.Show("Shifts have been copied to the clipboard! \r\nPaste them into the journal note!");
+            {
+                Clipboard.SetText(message);
+                MessageBox.Show("Shifts have been copied to the clipboard! \r\nPaste them into the journal note!");
+            }
             return false;
         }
 
         public bool Separate()
         {
+            GetShiftNote(false); // HACK Currently Separate() requires GetShiftNots to be called first. This is a bad design.
+
+
             // TODO: Simplify this logic for vmat only 
             //check for setup fields in the vmat and AP/PA plans
             if (!vmatPlan.Beams.Where(x => x.IsSetupField).Any() || (appaPlan.Count() > 0 && !legsSeparated && !appaPlan.First().Beams.Where(x => x.IsSetupField).Any()))
@@ -239,24 +245,30 @@ namespace VMATTBIautoPlan
                 CUI.message.Text = "I found some structures in the structure set for generating flash." + Environment.NewLine + Environment.NewLine + "Do you want me to remove them?!";
                 CUI.button1.Text = "No";
                 CUI.ShowDialog();
-                if (CUI.confirm) if (RemoveFlashStr()) return true;
+                if (CUI.confirm) // ask the user if they want to remove the flash structures
+                    if (RemoveFlashStr()) // if the user confirms, remove the flash structures
+                        return true;
             }
             //counter for indexing names
             int count = 0;
             //loop through the list of beams in each isocenter
+            // TODO change from foreach to for loop to allow for better indexing logic
             foreach (List<Beam> beams in vmatBeamsPerIso)
             {
                 //string message = "";
                 //foreach (Beam b in beams) message += b.Id + "\n";
                 //MessageBox.Show(message);
 
-                //copy the plan, set the plan id based on the counter, and make a empty list to hold the beams that need to be removed
+                // TODO v16: Add new reference point to plan
+                // TODO Verify in prod that Plan Intent is being copied properly
+                // copy the plan, set the plan id based on the counter, and make a empty list to hold the beams that need to be removed
                 ExternalPlanSetup newplan = (ExternalPlanSetup)vmatPlan.Course.CopyPlanSetup(vmatPlan);
-                int index = count + 1;
-                if (! IsoNameHelper.IsHFSLong(names.ElementAt(count))) // fix plan ID for FFS plans
-                    index = vmatBeamsPerIso.Count - count;
-                newplan.Id = String.Format("0{0} {1}", index, names.ElementAt(count));
 
+                int index = count + 1;
+                
+                // NOTE: Plan ID set here
+                // TODO: move this to the settings somehow
+                newplan.Id = String.Format("P{0} {1}", index, names.ElementAt(count));
                 List<Beam> removeMe = new List<Beam> { };
                 //can't add reference point to plan because it must be open in Eclipse for ESAPI to perform this function. Need to fix in v16
                 //newplan.AddReferencePoint(newplan.StructureSet.Structures.First(x => x.Id.ToLower() == "ptv_body"), null, newplan.Id, newplan.Id);
@@ -335,10 +347,21 @@ namespace VMATTBIautoPlan
         {
             //look in the structure set to see if any of the structures contain the string 'flash'. If so, return true indicating flash was included in this plan
             IEnumerable<Structure> flashStr = vmatPlan.StructureSet.Structures.Where(x => x.Id.ToLower().Contains("flash"));
-            if (flashStr.Any()) foreach (Structure s in flashStr) if (!s.IsEmpty) return true;
+            if (flashStr.Any())
+                foreach (Structure s in flashStr)
+                    if (!s.IsEmpty)
+                    {
+
+                        return true;
+                    }
+            flashRemoved = true;
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>false, always</returns>
         private bool RemoveFlashStr()
         {
             //remove the structures used to generate flash in the plan
@@ -402,7 +425,7 @@ namespace VMATTBIautoPlan
             else MessageBox.Show("WARNING 'HUMAN_BODY' STRUCTURE NOT FOUND! BE SURE TO RE-CONTOUR THE BODY STRUCTURE!");
             flashRemoved = true;
 
-            return false;
+            return false; // HACK: always return false, why?
         }
 
         public void CalculateDose()

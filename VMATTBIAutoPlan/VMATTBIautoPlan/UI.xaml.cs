@@ -637,8 +637,9 @@ namespace VMATTBIautoPlan
             //The scleroderma trial contouring/margins are specific to the trial, so this trial needs to be handled separately from the generic VMAT treatment type
             VMATTBIautoPlan.GenerateTS generate;
             //overloaded constructor depending on if the user requested to use flash or not. If so, pass the relevant flash parameters to the generateTS class
-            if (!useFlash) generate = new VMATTBIautoPlan.GenerateTS(settings.TS_Structures, settings.ScleroStructures, structureSpareList, selectedSS, targetMargin, false, settings.AllVMAT);
-            else generate = new VMATTBIautoPlan.GenerateTS(settings.TS_Structures, settings.ScleroStructures, structureSpareList, selectedSS, targetMargin, false, settings.AllVMAT, useFlash, flashStructure, flashMargin);
+            // HACK move useflash to settings and simplify constructor
+            if (!useFlash) generate = new VMATTBIautoPlan.GenerateTS(settings.TS_Structures, settings.ScleroStructures, structureSpareList, selectedSS, targetMargin, false, settings.AllVMAT, settings);
+            else generate = new VMATTBIautoPlan.GenerateTS(settings.TS_Structures, settings.ScleroStructures, structureSpareList, selectedSS, targetMargin, false, settings.AllVMAT, useFlash, flashStructure, flashMargin, settings);
             pi.BeginModifications();
             if (generate.GenerateStructures()) return;
             //does the structure sparing list need to be updated? This occurs when structures the user elected to spare with option of 'Mean Dose < Rx Dose' are high resolution. Since Eclipse can't perform
@@ -1558,7 +1559,6 @@ namespace VMATTBIautoPlan
                 //create an instance of the planPep class and pass it the vmatPlan and appaPlan objects as arguments. Get the shift note for the plan of interest
                 prep = new VMATTBIautoPlan.PlanPrep(vmatPlan, appaPlan);
             }
-            if (prep.GetShiftNote()) return;
 
             //let the user know this step has been completed (they can now do the other steps like separate plans and calculate dose)
             shiftTB.Background = System.Windows.Media.Brushes.ForestGreen;
@@ -1567,12 +1567,23 @@ namespace VMATTBIautoPlan
 
         private void SeparatePlans_Click(object sender, RoutedEventArgs e)
         {
-            //The shift note has to be retrieved first! Otherwise, we don't have instances of the plan objects
+            // The shift note has to be retrieved first! Otherwise, we don't have instances of the plan objects
             if (shiftTB.Text != "YES")
             {
                 var messageBoxResult = MessageBox.Show("no shift note", "Please generate the shift note before separating the plans! \n Continue?", MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.No)
                     return;
+                else if (messageBoxResult == MessageBoxResult.Yes)
+                {
+                    // HACK in case user does not want to generate shift note but still wants to separate plans, this way the clipboard is not overwritten
+                    var tempClipboard = Clipboard.GetText();
+                    GenerateShiftNote_Click(sender, e); // HACK: This is a hack to get the shift note without copying to clipboard
+                    Clipboard.SetText(tempClipboard);
+                }
+                else
+                {
+                    // TODO Figure out how to close app from this point
+                }
             }
 
             //separate the plans

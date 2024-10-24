@@ -33,9 +33,11 @@ namespace VMATTBIautoPlan
         private Structure flashStructure = null;
         private double flashMargin;
         public bool updateSparingList = false;
+        readonly Settings settings;
 
-        public GenerateTS(List<Tuple<string,string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat)
+        public GenerateTS(List<Tuple<string,string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, Settings settings)
         {
+            this.settings = settings;
             TS_structures = new List<Tuple<string, string>>(ts);
             scleroStructures = new List<Tuple<string, string>>(sclero_ts);
             spareStructList = new List<Tuple<string,string,double>>(list);
@@ -45,8 +47,9 @@ namespace VMATTBIautoPlan
             allVMAT = vmat;
         }
 
-        public GenerateTS(List<Tuple<string, string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, bool flash, Structure fSt, double fM)
+        public GenerateTS(List<Tuple<string, string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, bool flash, Structure fSt, double fM, Settings settings)
         {
+            this.settings = settings;
             //overloaded constructor for the case where the user wants to include flash in the simulation
             TS_structures = new List<Tuple<string, string>>(ts);
             scleroStructures = new List<Tuple<string, string>>(sclero_ts);

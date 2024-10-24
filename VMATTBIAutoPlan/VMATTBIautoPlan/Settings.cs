@@ -72,6 +72,9 @@ namespace VMATTBIautoPlan
         // options are 'Very Low', 'Low', 'Moderate', 'High', 'Very High' 
         // not sure how spaces are handled
 
+        // HACK bad way to get the PTV to skip structures
+        // TODO replace this with a gui feature that lets users deselect structure subtraction. 
+        public readonly string[] StructuresNotRemovedFromPTV = { "Brain" }; 
 
 
         #region Accessor Properties
