@@ -134,3 +134,9 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
+
+.venv/
+/.vs
+/VMATTBIAutoPlan/.vs/
+/VMATTBIAutoPlan/VMATTBIautoPlan/.vs
+/VMATTBIAutoPlan/VMATTBI_optLoopMT/.vs

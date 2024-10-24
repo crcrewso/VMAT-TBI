@@ -1,25 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.ComponentModel;
 using System.Threading;
 using System.Windows.Threading;
 using System.Diagnostics;
 using System.IO;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
-using System.Runtime.InteropServices;
 
 namespace VMATTBI_optLoop
 {
@@ -31,12 +20,13 @@ namespace VMATTBI_optLoop
         public bool canClose;
         //flag that controls whether the code is run in 'Demo' mode. In demo mode, no coverage check, VMAT optimization, or dose calculations are performed. Instead, these statements have been replaced with Thread.Sleep(3000), which 
         //tells the code to 'sleep' for 3 seconds
+#pragma warning disable IDE0044 // Add readonly modifier
         private bool demo;
         //total number of calculations/items that need to be completed during the optimization loop
         public int calcItems;
         //used to copy the instances of the background thread and the optimizationLoop class
         ESAPIworker slave;
-        optimizationLoop op;
+        OptimizationLoop op;
         //string to hold the patient MRN number
         string id = "";
         //path to where the log files should be written
@@ -49,10 +39,12 @@ namespace VMATTBI_optLoop
         string optResHeader = "";
         //get instances of the stopwatch and dispatch timer to report how long the calculation takes at each reporting interval
         Stopwatch sw = new Stopwatch();
+
         DispatcherTimer dt = new DispatcherTimer();
+#pragma warning restore IDE0044 // Add readonly modifier
         string currentTime = "";
 
-        public progressWindow(ESAPIworker e, optimizationLoop o)
+        public progressWindow(ESAPIworker e, OptimizationLoop o)
         {
             InitializeComponent();
 
@@ -95,21 +87,34 @@ namespace VMATTBI_optLoop
 
             //set total number of milestones (used for calculation of percent progress completed)
             //7 milestones always have to be completed if coverage check is selected
-            if (slave.data.oneMoreOpt) calcItems = (10 + 7 * slave.data.numOptimizations);
-            else calcItems = (7 + 7 * slave.data.numOptimizations);
+            if (slave.data.oneMoreOpt)
+            {
+                calcItems = (10 + 7 * slave.data.numOptimizations);
+            }
+            else
+            {
+                calcItems = (7 + 7 * slave.data.numOptimizations);
+            }
             //if coverage check is NOT selected, remove 4 of these milestones
-            if (demo || !slave.data.runCoverageCheck) calcItems -= 5;
-            if (slave.data.useFlash) calcItems += 2;
+            if (demo || !slave.data.runCoverageCheck)
+            {
+                calcItems -= 5;
+            }
+
+            if (slave.data.useFlash)
+            {
+                calcItems += 2;
+            }
 
             //initialize and start the stopwatch
             runTime.Text = "00:00:00";
-            dt.Tick += new EventHandler(dt_tick);
+            dt.Tick += new EventHandler(Dt_tick);
             dt.Interval = new TimeSpan(0, 0, 1);
             sw.Start();
             dt.Start();
 
             //start the optimization loop
-            doStuff();
+            DoStuff();
         }
 
         private void Abort_Click(object sender, RoutedEventArgs e)
@@ -123,11 +128,11 @@ namespace VMATTBI_optLoop
                 abortOpt = true;
                 abortStatus.Text = "Canceling";
                 abortStatus.Background = System.Windows.Media.Brushes.Yellow;
-                updateLogFile(message);
+                UpdateLogFile(message);
             }
         }
 
-        private void dt_tick(object sender, EventArgs e)
+        private void Dt_tick(object sender, EventArgs e)
         {
             //increment the time on the progress window for each "tick", which is set to intervals of 1 second
             if (sw.IsRunning)
@@ -138,7 +143,7 @@ namespace VMATTBI_optLoop
             }
         }
 
-        public void doStuff()
+        public void DoStuff()
         {
             //execute the optimization loop on the daughter thread
             slave.DoWork(d =>
@@ -148,7 +153,7 @@ namespace VMATTBI_optLoop
                 //These commands in this class are used to update the progress window UI (under control of the daughter thread)
                 Dispatcher.BeginInvoke((Action)(() => { abortStatus.Text = "Running"; }));
                 //run preliminary checks on the plan before starting the optimization loop. The code for these checks is in the optimizationLoop class
-                if (op.preliminaryChecks(d.plan, d.checkSpinningManny, d.supportStructureIds))
+                if (op.PreliminaryChecks(d.plan, d.checkSpinningManny, d.supportStructureIds))
                 {
                     //preliminary checks have failed. Set the abort status and kill the optimization loop
                     Dispatcher.BeginInvoke((Action)(() => { abortStatus.Text = "Failed!"; }));
@@ -161,7 +166,7 @@ namespace VMATTBI_optLoop
                 //check if the user hit the 'Abort' button before/during the preliminary checks
                 if (abortOpt)
                 {
-                    Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                    Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                     return;
                 }
 
@@ -174,13 +179,13 @@ namespace VMATTBI_optLoop
                     " Copy and save each optimized plan: {4}" + System.Environment.NewLine +
                     " Plan normalization: PTV V{5}cGy = {6:0.0}%" + System.Environment.NewLine,
                     DateTime.Now.ToString(), d.runCoverageCheck.ToString(), d.numOptimizations.ToString(), d.oneMoreOpt.ToString(), d.copyAndSavePlanItr.ToString(), d.plan.TotalDose.Dose.ToString(), d.targetVolCoverage.ToString());
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate(info); }));
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(info); }));
 
                 if (d.useFlash)
                 {
                     string message = String.Format(" I've found structures in the optimization list that have the keyword 'flash'!" + System.Environment.NewLine
                         + " I'm assuming you want to include flash in the optimization! Stop the loop if this is a mistake!" + System.Environment.NewLine);
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
                 }
 
 
@@ -192,7 +197,7 @@ namespace VMATTBI_optLoop
                     //"structure Id", "constraint type", "dose (cGy or %)", "volume (%)", "Dose display (absolute or relative)"
                     planObjectives += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-9} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
                 }
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate(planObjectives); }));
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(planObjectives); }));
 
                 //print requested tuning structures
                 string TSstructures = System.Environment.NewLine;
@@ -200,7 +205,10 @@ namespace VMATTBI_optLoop
                 foreach (Tuple<string, double, double, double, int, List<Tuple<string, double, string, double>>> itr in d.requestedTSstructures)
                 {
                     TSstructures += String.Format(" {0, -15} | {1, -9:N1} | {2,-10:N1} | {3,-5:N1} | {4,-8} |", itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
-                    if (!itr.Item6.Any()) TSstructures += String.Format(" {0,-10} |", "none") + System.Environment.NewLine;
+                    if (!itr.Item6.Any())
+                    {
+                        TSstructures += String.Format(" {0,-10} |", "none") + System.Environment.NewLine;
+                    }
                     else
                     {
                         int index = 0;
@@ -208,39 +216,60 @@ namespace VMATTBI_optLoop
                         {
                             if (index == 0)
                             {
-                                if (itr1.Item1.Contains("Dmax")) TSstructures += String.Format(" {0,-10} |", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                                else if (itr1.Item1.Contains("V")) TSstructures += String.Format(" {0,-10} |", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                                else TSstructures += String.Format(" {0,-10} |", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                                if (itr1.Item1.Contains("Dmax"))
+                                {
+                                    TSstructures += String.Format(" {0,-10} |", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                                }
+                                else if (itr1.Item1.Contains("V"))
+                                {
+                                    TSstructures += String.Format(" {0,-10} |", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                                }
+                                else
+                                {
+                                    TSstructures += String.Format(" {0,-10} |", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                                }
                             }
                             else
                             {
-                                if (itr1.Item1.Contains("Dmax")) TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                                else if (itr1.Item1.Contains("V")) TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
-                                else TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                                if (itr1.Item1.Contains("Dmax"))
+                                {
+                                    TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}{2}%", itr1.Item1, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                                }
+                                else if (itr1.Item1.Contains("V"))
+                                {
+                                    TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}{1}%{2}{3}%", itr1.Item1, itr1.Item2, itr1.Item3, itr1.Item4)) + System.Environment.NewLine;
+                                }
+                                else
+                                {
+                                    TSstructures += String.Format(" {0,-59} | {1,-10} |", " ", String.Format("{0}", itr1.Item1)) + System.Environment.NewLine;
+                                }
                             }
                             index++;
                         }
                     }
                 }
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate(TSstructures); }));
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(TSstructures); }));
 
                 //update the progress in the message window and the percent completion in the GUI
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Primilary checks passed"); }));
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Primilary checks passed"); }));
 
                 //following the preliminary checks, perform a coverage check to ensure all portions of the ptv are covered by some amount of beam. Here, all optimization constraint priorities are zero-ed except for the ptv structures
                 //if the global hotspot is > ~ 140%, then this indicates that a portion of the ptv is NOT covered by any of the beams and the process of normalizing to 90% coverage dramatically increases the hotspot.
                 //arguments to runCoverageCheck: optimization parameters, instance of the plan, current percent completion, relative dose and target coverage needed for normalization
-                if (demo || !d.runCoverageCheck) Dispatcher.BeginInvoke((Action)(() => { provideUpdate(" Skipping coverage check! Moving on to optimization loop!"); }));
+                if (demo || !d.runCoverageCheck)
+                {
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(" Skipping coverage check! Moving on to optimization loop!"); }));
+                }
                 else if (!abortOpt)
                 {
                     //this is NOT demo mode, the user has NOT requested to stop the optimization loop, and the user wants to run the coverage check.
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Running coverage Check!"); }));
-                    if (runCoverageCheck(d.optParams, d.plan, percentCompletion, d.relativeDose, d.targetVolCoverage, d.useFlash))
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Running coverage Check!"); }));
+                    if (RunCoverageCheck(d.optParams, d.plan, percentCompletion, d.relativeDose, d.targetVolCoverage, d.useFlash))
                     {
                         //8/2/2020 changed messagebox to just an update as having a messagebox stops the progress of the optimization loop. 
                         string message = System.Environment.NewLine + String.Format(" I'm having trouble covering the target with the Rx Dose! Hot spot = {0:0.0}%", 100 * (d.plan.Dose.DoseMax3D.Dose / d.plan.TotalDose.Dose))
                             + Environment.NewLine + " Consider stopping the optimization and checking the beam arrangement!";
-                        Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
                     }
                     //increment percentCompletion variable by 4 to account for the runCoverage check progress. Normally I would pass by reference, but pass by reference isn't supported inside lambda expressions, so it needs to be done this way
                     percentCompletion += 4;
@@ -249,20 +278,23 @@ namespace VMATTBI_optLoop
                 //not demo mode and coverage check completed. Or user asked to abort the optimization loop
                 if (abortOpt)
                 {
-                    Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                    Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                     return;
                 }
 
                 //if the user set the number of optimizations to less than 1, just reset the optimization parameters to their original values and finish
                 if (d.numOptimizations < 1)
                 {
-                    op.updateConstraints(d.optParams, d.plan);
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems)); setAbortStatus(); }));
+                    op.UpdateConstraints(d.optParams, d.plan);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems)); SetAbortStatus(); }));
                     return;
                 }
                 else
                 {
-                    if (!demo && d.runCoverageCheck) Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Coverage check completed! Commencing optimization loop!"); }));
+                    if (!demo && d.runCoverageCheck)
+                    {
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Coverage check completed! Commencing optimization loop!"); }));
+                    }
 
                     //coverage check passed, now set some initial optimization parameters for each structure in the initial list
                     List<Tuple<string, string, double, double, int>> initialObj = new List<Tuple<string, string, double, double, int>> { };
@@ -272,130 +304,155 @@ namespace VMATTBI_optLoop
                     foreach (Tuple<string, string, double, double, int> opt in d.optParams)
                     {
                         //leave the PTV priorities at their original values (i.e., 100)
-                        if (opt.Item1.ToLower().Contains("ptv") || opt.Item1.ToLower().Contains("ts_jnx")) priority = opt.Item5;
+                        if (opt.Item1.ToLower().Contains("ptv") || opt.Item1.ToLower().Contains("ts_jnx"))
+                        {
+                            priority = opt.Item5;
+                        }
                         //start OAR structure priorities at 2/3 of the values the user specified so there is some wiggle room for adjustment
-                        else priority = (int)Math.Ceiling(((double)opt.Item5 * 2) / 3);
+                        else
+                        {
+                            priority = (int)Math.Ceiling(((double)opt.Item5 * 2) / 3);
+                        }
+
                         initialObj.Add(Tuple.Create(opt.Item1, opt.Item2, opt.Item3, opt.Item4, priority));
                         message += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, priority);
                     }
                     //reset the objectives and inform the user of the current optimization parameters
-                    op.updateConstraints(initialObj, d.plan);
+                    op.UpdateConstraints(initialObj, d.plan);
                     //update the current optimization parameters for this iteration
                     d.optParams = initialObj;
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
                 }
-                if (demo) Thread.Sleep(3000);
-                else d.app.SaveModifications();
+                if (demo)
+                {
+                    Thread.Sleep(3000);
+                }
+                else
+                {
+                    d.app.SaveModifications();
+                }
 
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate(" Starting optimization loop!"); }));
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(" Starting optimization loop!"); }));
                 //counter to keep track of how many optimization iterations have been performed
                 int count = 0;
                 while (count < d.numOptimizations)
                 {
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), String.Format(" Iteration {0}:", count + 1)); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
-                    if (demo) Thread.Sleep(3000);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), String.Format(" Iteration {0}:", count + 1)); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //optimize with intermediate dose (AAA algorithm).
                         try
                         {
                             OptimizerResult optRes = d.plan.OptimizeVMAT(new OptimizationOptionsVMAT(OptimizationIntermediateDoseOption.NoIntermediateDose, ""));
-                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     //check if user wants to stop
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating intermediate dose!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
-                    if (demo) Thread.Sleep(3000);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating intermediate dose!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //calculate dose
                         try
                         {
                             CalculationResult calcRes = d.plan.CalculateDose();
-                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated! Continuing optimization!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
-                    if (demo) Thread.Sleep(3000);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated! Continuing optimization!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //continue optimization using existing dose as intermediate (AAA algorithm).
                         try 
                         { 
                             OptimizerResult optRes = d.plan.OptimizeVMAT(new OptimizationOptionsVMAT(OptimizationOption.ContinueOptimizationWithPlanDoseAsIntermediateDose, ""));
-                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     //check if user wants to stop
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating dose!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
-                    if (demo) Thread.Sleep(3000);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating dose!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //calculate dose
                         try
                         {
                             CalculationResult calcRes = d.plan.CalculateDose();
-                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
                     //normalize
-                    op.normalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, d.useFlash);
+                    op.NormalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, d.useFlash);
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Plan normalized! Evaluating plan quality and updating constraints!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Plan normalized! Evaluating plan quality and updating constraints!"); }));
                     //evaluate the new plan for quality and make any adjustments to the optimization parameters
-                    optimizationLoop.evalStruct e = op.evaluateAndUpdatePlan(d.plan, d.optParams, d.planObj, d.requestedTSstructures, d.threshold, d.lowDoseLimit, (d.oneMoreOpt && ((count + 1) == d.numOptimizations)));
+                    OptimizationLoop.EvalStruct e = op.EvaluateAndUpdatePlan(d.plan, d.optParams, d.planObj, d.requestedTSstructures, d.threshold, d.lowDoseLimit, (d.oneMoreOpt && ((count + 1) == d.numOptimizations)));
 
                     //updated optimization constraint list is empty, which means that all plan objectives have been met. Let the user know and break the loop. Also set oneMoreOpt to false so that extra optimization is not performed
                     if (!e.updatedObj.Any())
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" All plan objectives have been met! Exiting!")); }));
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" All plan objectives have been met! Exiting!")); }));
                         d.oneMoreOpt = false;
                         break;
                     }
@@ -430,12 +487,19 @@ namespace VMATTBI_optLoop
                         optResults += String.Format(" {0, -15} | {1, -16} | {2, -20:N1} | {3, -16} | {4, -12:N1} | {5, -9:N1} |" + System.Environment.NewLine, id, d.optParams.ElementAt(index).Item2, itr.Item4, itr.Item6, itr.Item5, 100 * itr.Item5 / e.totalCostPlanOpt);
                         index++;
                     }
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(optResults); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(optResults); }));
 
                     //print useful info about target coverage and global dmax
                     Structure target;
-                    if (d.useFlash) target = e.diffPlanOpt.First(x => x.Item1.Id.ToLower() == "ts_ptv_flash").Item1;
-                    else target = e.diffPlanOpt.First(x => x.Item1.Id.ToLower() == "ts_ptv_vmat").Item1;
+                    if (d.useFlash)
+                    {
+                        target = e.diffPlanOpt.First(x => x.Item1.Id.ToLower() == "ts_ptv_flash").Item1;
+                    }
+                    else
+                    {
+                        target = e.diffPlanOpt.First(x => x.Item1.Id.ToLower() == "ts_ptv_vmat").Item1;
+                    }
+
                     string message = " Additional plan infomation: " + System.Environment.NewLine +
                                      String.Format(" Plan global Dmax = {0:0.0}%", 100 * (d.plan.Dose.DoseMax3D.Dose / d.plan.TotalDose.Dose)) + System.Environment.NewLine +
                                      String.Format(" {0} Dmax = {1:0.0}%", target.Id, d.plan.GetDoseAtVolume(target, 0.0, VolumePresentation.Relative, DoseValuePresentation.Relative).Dose) + System.Environment.NewLine +
@@ -443,7 +507,7 @@ namespace VMATTBI_optLoop
                                      String.Format(" {0} V90% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(90.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                      String.Format(" {0} V110% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(110.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                      String.Format(" {0} V120% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(120.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
 
                     //really crank up the priority and lower the dose objective on the cooler on the last iteration of the optimization loop
                     //this is basically here to avoid having to call op.updateConstraints a second time (if this batch of code was placed outside of the loop)
@@ -458,7 +522,10 @@ namespace VMATTBI_optLoop
                             {
                                 finalObj.Add(new Tuple<string, string, double, double, int>(itr.Item1, itr.Item2, 0.98*itr.Item3, itr.Item4, Math.Max(itr.Item5, (int)(0.9*(double)e.updatedObj.Max(x => x.Item5)))));
                             }
-                            else finalObj.Add(itr);
+                            else
+                            {
+                                finalObj.Add(itr);
+                            }
                         }
                         //set e.updatedObj to be equal to finalObj
                         e.updatedObj = finalObj;
@@ -468,77 +535,95 @@ namespace VMATTBI_optLoop
                     string newObj = System.Environment.NewLine;
                     newObj += optObjHeader;
                     foreach (Tuple<string, string, double, double, int> itr in e.updatedObj)
+                    {
                         newObj += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, itr.Item1, itr.Item2, itr.Item3, itr.Item4, itr.Item5);
+                    }
 
                     //update the optimization constraints in the plan
-                    op.updateConstraints(e.updatedObj, d.plan);
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), newObj); }));
+                    op.UpdateConstraints(e.updatedObj, d.plan);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), newObj); }));
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
                     //increment the counter, update d.optParams so it is set to the initial optimization constraints at the BEGINNING of the optimization iteration, and save the changes to the plan
                     count++;
                     d.optParams = e.updatedObj;
-                    if(!demo) d.app.SaveModifications();
+                    if(!demo)
+                    {
+                        d.app.SaveModifications();
+                    }
                 }
 
                 //option to run one additional optimization (can be requested on the main GUI)
                 if (d.oneMoreOpt)
                 {
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Running one final optimization starting at MR3 to try and reduce global plan hotspots!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Running one final optimization starting at MR3 to try and reduce global plan hotspots!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
                     //one final push to lower the global plan hotspot if the user asked for it
-                    if (demo) Thread.Sleep(3000);
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //run optimization using current dose as intermediate dose. This will start the optimization at MR3 or MR4 (depending on the configuration of Eclipse)
                         try
                         {
                             OptimizerResult optRes = d.plan.OptimizeVMAT(new OptimizationOptionsVMAT(OptimizationOption.ContinueOptimizationWithPlanDoseAsIntermediateDose, ""));
-                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating dose!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
-                    if (demo) Thread.Sleep(3000);
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished! Calculating dose!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    if (demo)
+                    {
+                        Thread.Sleep(3000);
+                    }
                     else
                     {
                         //calculate dose
                         try
                         {
                             CalculationResult calcRes = d.plan.CalculateDose();
-                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                            if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
                             d.app.SaveModifications();
                         }
-                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+                        catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
                     }
 
                     if (abortOpt)
                     {
-                        Dispatcher.BeginInvoke((Action)(() => { setAbortStatus(); }));
+                        Dispatcher.BeginInvoke((Action)(() => { SetAbortStatus(); }));
                         return;
                     }
 
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}" + System.Environment.NewLine, currentTime)); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}" + System.Environment.NewLine, currentTime)); }));
                     //normalize
-                    op.normalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, d.useFlash);
+                    op.NormalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, d.useFlash);
 
                     //print useful info about target coverage and global dmax
                     Structure target;
-                    if (d.useFlash) target = d.plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_flash");
-                    else target = d.plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_vmat");
+                    if (d.useFlash)
+                    {
+                        target = d.plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_flash");
+                    }
+                    else
+                    {
+                        target = d.plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_vmat");
+                    }
+
                     string message = " Final plan infomation: " + System.Environment.NewLine +
                                     String.Format(" Plan global Dmax = {0:0.0}%", 100 * (d.plan.Dose.DoseMax3D.Dose / d.plan.TotalDose.Dose)) + System.Environment.NewLine +
                                     String.Format(" {0} Dmax = {1:0.0}%", target.Id, d.plan.GetDoseAtVolume(target, 0.0, VolumePresentation.Relative, DoseValuePresentation.Relative).Dose) + System.Environment.NewLine +
@@ -546,19 +631,19 @@ namespace VMATTBI_optLoop
                                     String.Format(" {0} V90% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(90.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                     String.Format(" {0} V110% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(110.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                     String.Format(" {0} V120% = {1:0.0}%", target.Id, d.plan.GetVolumeAtDose(target, new DoseValue(120.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
                 }
 
                 if (d.useFlash)
                 {
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), String.Format(System.Environment.NewLine + " Removing flash, recalculating dose, and renormalizing to TS_PTV_VMAT!")); }));
-                    Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), String.Format(System.Environment.NewLine + " Removing flash, recalculating dose, and renormalizing to TS_PTV_VMAT!")); }));
+                    Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
 
                     Structure bolus = d.plan.StructureSet.Structures.FirstOrDefault(x => x.Id.ToLower() == "bolus_flash");
                     if (bolus == null)
                     {
                         //no structure named bolus_flash found. This is a problem. 
-                        Dispatcher.BeginInvoke((Action)(() => { provideUpdate(" No structure named 'BOLUS_FLASH' found in structure set! Exiting!"); }));
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(" No structure named 'BOLUS_FLASH' found in structure set! Exiting!"); }));
                     }
                     else
                     {
@@ -577,27 +662,33 @@ namespace VMATTBI_optLoop
                         //reset the bolus dose to undefined
                         bolus.ResetAssignedHU();
                         //recalculate dose to all the plans that had previously had dose calculated in the current course
-                        if (demo) Thread.Sleep(3000);
+                        if (demo)
+                        {
+                            Thread.Sleep(3000);
+                        }
                         else
                         {
-                            foreach (ExternalPlanSetup p in plansWithCalcDose) { try { p.CalculateDose(); } catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed because: {0}", except.Message)); }));} }
+                            foreach (ExternalPlanSetup p in plansWithCalcDose) { try { p.CalculateDose(); } catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed because: {0}", except.Message)); }));} }
 
                         }
-                        Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
-                        Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated, normalizing plan!"); }));
+                        Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
                         //"trick" the normalizePlan method into thinking we are not using flash. Therefore, it will normalize to TS_PTV_VMAT instead of TS_PTV_FLASH (i.e., set useFlash to false)
-                        op.normalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, false);
+                        op.NormalizePlan(d.plan, d.relativeDose, d.targetVolCoverage, false);
                     }
                 }
 
                 //optimization loop is finished, let user know, and save the changes to the plan
                 isFinished = true;
-                Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), System.Environment.NewLine + " Finished!"); setAbortStatus(); }));
-                if(!demo) d.app.SaveModifications();
+                Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), System.Environment.NewLine + " Finished!"); SetAbortStatus(); }));
+                if(!demo)
+                {
+                    d.app.SaveModifications();
+                }
             });
         }
 
-        public bool runCoverageCheck(List<Tuple<string, string, double, double, int>> optParams, ExternalPlanSetup plan, int percentCompletion, double relativeDose, double targetVolCoverage, bool useFlash)
+        public bool RunCoverageCheck(List<Tuple<string, string, double, double, int>> optParams, ExternalPlanSetup plan, int percentCompletion, double relativeDose, double targetVolCoverage, bool useFlash)
         {
             //zero all optimization objectives except those in the target
             List<Tuple<string, string, double, double, int>> targetOnlyObj = new List<Tuple<string, string, double, double, int>> { };
@@ -606,47 +697,72 @@ namespace VMATTBI_optLoop
 
             foreach (Tuple<string, string, double, double, int> opt in optParams)
             {
-                if (opt.Item1.ToLower().Contains("ptv") || opt.Item1.ToLower().Contains("ts_jnx")) priority = opt.Item5;
-                else priority = 0;
+                if (opt.Item1.ToLower().Contains("ptv") || opt.Item1.ToLower().Contains("ts_jnx"))
+                {
+                    priority = opt.Item5;
+                }
+                else
+                {
+                    priority = 0;
+                }
+
                 targetOnlyObj.Add(Tuple.Create(opt.Item1, opt.Item2, opt.Item3, opt.Item4, priority));
                 //record the optimization constraints for each structure after zero-ing the priorities. This information will be reported to the user in a progress update
                 message += String.Format(" {0, -15} | {1, -16} | {2,-10:N1} | {3,-10:N1} | {4,-8} |" + System.Environment.NewLine, opt.Item1, opt.Item2, opt.Item3, opt.Item4, priority);
             }
             //update the constraints and provide an update to the user
-            op.updateConstraints(targetOnlyObj, plan);
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), message); }));
+            op.UpdateConstraints(targetOnlyObj, plan);
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), message); }));
 
             //run one optimization with NO intermediate dose.
             try
             {
                 OptimizerResult optRes = plan.OptimizeVMAT(new OptimizationOptionsVMAT(OptimizationIntermediateDoseOption.NoIntermediateDose, ""));
-                if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                if (!optRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed!" + System.Environment.NewLine + " Try running the optimization manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
             }
-            catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
-            if (abortOpt) return false;
+            catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Optimization failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+            if (abortOpt)
+            {
+                return false;
+            }
             //provide update
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished on coverage check! Calculating dose!"); }));
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Optimization finished on coverage check! Calculating dose!"); }));
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Elapsed time: {0}", currentTime)); }));
 
             //calculate dose (using AAA algorithm)
             try
             {
                 CalculationResult calcRes = plan.CalculateDose();
-                if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
+                if (!calcRes.Success) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed!" + System.Environment.NewLine + " Try running the dose calculation manually Eclipse for more information!" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!")); })); abortOpt = true; }
             }
-            catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
-            if (abortOpt) return false;
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated for coverage check, normalizing plan!"); }));
+            catch (Exception except) { Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Error! Dose calculation failed because: {0}" + System.Environment.NewLine + System.Environment.NewLine + " Exiting!", except.Message)); })); abortOpt = true; }
+            if (abortOpt)
+            {
+                return false;
+            }
+
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Dose calculated for coverage check, normalizing plan!"); }));
 
             //normalize plan
-            op.normalizePlan(plan, relativeDose, targetVolCoverage, useFlash);
-            if (abortOpt) return false;
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate((int)(100 * (++percentCompletion) / calcItems), " Plan normalized!"); }));
+            op.NormalizePlan(plan, relativeDose, targetVolCoverage, useFlash);
+            if (abortOpt)
+            {
+                return false;
+            }
+
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate((int)(100 * (++percentCompletion) / calcItems), " Plan normalized!"); }));
 
             //print useful info about target coverage and global dmax
             Structure target;
-            if (useFlash) target = plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_flash");
-            else target = plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_vmat");
+            if (useFlash)
+            {
+                target = plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_flash");
+            }
+            else
+            {
+                target = plan.StructureSet.Structures.First(x => x.Id.ToLower() == "ts_ptv_vmat");
+            }
+
             message = " Additional plan infomation: " + System.Environment.NewLine +
                                 String.Format(" Plan global Dmax = {0:0.0}%", 100 * (plan.Dose.DoseMax3D.Dose / plan.TotalDose.Dose)) + System.Environment.NewLine +
                                 String.Format(" {0} Dmax = {1:0.0}%", target.Id, plan.GetDoseAtVolume(target, 0.0, VolumePresentation.Relative, DoseValuePresentation.Relative).Dose) + System.Environment.NewLine +
@@ -654,28 +770,31 @@ namespace VMATTBI_optLoop
                                 String.Format(" {0} V90% = {1:0.0}%", target.Id, plan.GetVolumeAtDose(target, new DoseValue(90.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                 String.Format(" {0} V110% = {1:0.0}%", target.Id, plan.GetVolumeAtDose(target, new DoseValue(110.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative)) + System.Environment.NewLine +
                                 String.Format(" {0} V120% = {1:0.0}%", target.Id, plan.GetVolumeAtDose(target, new DoseValue(120.0, DoseValue.DoseUnit.Percent), VolumePresentation.Relative));
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate(message); }));
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(message); }));
 
             //calculate global Dmax expressed as a percent of the prescription dose (if dose has been calculated)
-            if (plan.IsDoseValid && ((plan.Dose.DoseMax3D.Dose / plan.TotalDose.Dose) > 1.40)) return true;
+            if (plan.IsDoseValid && ((plan.Dose.DoseMax3D.Dose / plan.TotalDose.Dose) > 1.40))
+            {
+                return true;
+            }
             //else MessageBox.Show(String.Format("max dose: {0}%", 100 * (plan.Dose.DoseMax3D.Dose / plan.TotalDose.Dose)));
             return false;
         }
 
         //three overloaded methods to provide periodic updates on the progress of the optimization loop
-        public void provideUpdate(int percentComplete, string message)
+        public void ProvideUpdate(int percentComplete, string message)
         {
             progress.Value = percentComplete;
             update.Text += message + System.Environment.NewLine;
             scroller.ScrollToBottom();
-            updateLogFile(message);
+            UpdateLogFile(message);
         }
 
-        public void provideUpdate(int percentComplete) { progress.Value = percentComplete; }
+        public void ProvideUpdate(int percentComplete) { progress.Value = percentComplete; }
 
-        public void provideUpdate(string message) { update.Text += message + System.Environment.NewLine; scroller.ScrollToBottom(); updateLogFile(message); }
+        public void ProvideUpdate(string message) { update.Text += message + Environment.NewLine; scroller.ScrollToBottom(); UpdateLogFile(message); }
 
-        private void updateLogFile(string output)
+        private void UpdateLogFile(string output)
         {
             //this is here to check if the directory and file already exist. An alternative method would be to create a streamwriter in the constructor of this class, but because this program runs for several hours and I have no
             //control over the shared drive, there may be a situation where the streamwriter is created and wants to write to the file after a few hours and (for whatever reason) the directory/file is gone. In this case, it would likely
@@ -712,7 +831,7 @@ namespace VMATTBI_optLoop
             }
         }
 
-        private void setAbortStatus()
+        private void SetAbortStatus()
         {
             if (abortOpt)
             {
@@ -729,7 +848,7 @@ namespace VMATTBI_optLoop
             //stop the clock and report the total run time. Also set the canClose flag to true to let the code know the background thread has finished working and it is safe to close
             sw.Stop();
             dt.Stop();
-            Dispatcher.BeginInvoke((Action)(() => { provideUpdate(String.Format(" Total run time: {0}", currentTime)); }));
+            Dispatcher.BeginInvoke((Action)(() => { ProvideUpdate(String.Format(" Total run time: {0}", currentTime)); }));
 
             canClose = true;
         }

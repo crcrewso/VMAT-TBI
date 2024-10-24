@@ -10,7 +10,7 @@ using Microsoft.Win32;
 
 namespace VMATTBIautoPlan
 {
-    class generateTS
+    class GenerateTS
     {
         //structure, sparing type, added margin
         public List<Tuple<string, string, double>> spareStructList;
@@ -33,9 +33,11 @@ namespace VMATTBIautoPlan
         private Structure flashStructure = null;
         private double flashMargin;
         public bool updateSparingList = false;
+        readonly Settings settings;
 
-        public generateTS(List<Tuple<string,string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat)
+        public GenerateTS(List<Tuple<string,string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, Settings settings)
         {
+            this.settings = settings;
             TS_structures = new List<Tuple<string, string>>(ts);
             scleroStructures = new List<Tuple<string, string>>(sclero_ts);
             spareStructList = new List<Tuple<string,string,double>>(list);
@@ -45,8 +47,9 @@ namespace VMATTBIautoPlan
             allVMAT = vmat;
         }
 
-        public generateTS(List<Tuple<string, string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, bool flash, Structure fSt, double fM)
+        public GenerateTS(List<Tuple<string, string>> ts, List<Tuple<string, string>> sclero_ts, List<Tuple<string, string, double>> list, StructureSet ss, double tm, bool st, bool vmat, bool flash, Structure fSt, double fM, Settings settings)
         {
+            this.settings = settings;
             //overloaded constructor for the case where the user wants to include flash in the simulation
             TS_structures = new List<Tuple<string, string>>(ts);
             scleroStructures = new List<Tuple<string, string>>(sclero_ts);
@@ -60,17 +63,17 @@ namespace VMATTBIautoPlan
             flashMargin = fM;
         }
 
-        public bool generateStructures()
+        public bool GenerateStructures()
         {
             isoNames.Clear();
-            if (preliminaryChecks()) return true;
-            if (createTSStructures()) return true;
-            if (useFlash) if(createFlash()) return true;
+            if (PreliminaryChecks()) return true;
+            if (CreateTSStructures()) return true;
+            if (useFlash) if(CreateFlash()) return true;
             MessageBox.Show("Structures generated successfully!\nPlease proceed to the beam placement tab!");
             return false;
         }
 
-        private bool preliminaryChecks()
+        private bool PreliminaryChecks()
         {
             //check if user origin was set
             //get the points collection for the Body (used for calculating number of isocenters)
@@ -81,61 +84,14 @@ namespace VMATTBIautoPlan
                 return true;
             }
 
-            //check if patient length is > 116cm, if so, check for matchline contour
-            if ((pts.Max(p => p.Z) - pts.Min(p => p.Z)) > 1160.0 && !selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any())
-            {
-                //check to see if the user wants to proceed even though there is no matchplane contour or the matchplane contour exists, but is not filled
-                VMATTBIautoPlan.confirmUI CUI = new VMATTBIautoPlan.confirmUI();
-                CUI.message.Text = "No matchplane contour found even though patient length > 116.0 cm!" + Environment.NewLine + Environment.NewLine + "Continue?!";
-                CUI.ShowDialog();
-                if (!CUI.confirm) return true;
 
-                //checks for LA16 couch and spinning manny couch/bolt will be performed at optimization stage
-            }
+            // predicts the number of isocenters based on the length of the body contour
 
-            //calculate number of required isocenters
-            if (!selectedSS.Structures.Where(x => x.Id.ToLower() == "matchline").Any())
-            {
-                //no matchline implying that this patient will be treated with VMAT only. For these cases the maximum number of allowed isocenters is 3.
-                //the reason for the explicit statements calculating the number of isos and then truncating them to 4 was to account for patients requiring < 4 isos and if, later on, we want to remove the restriction of 4 isos
-                numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
-                if (numIsos > 4) numIsos = numVMATIsos = 4;
-            }
-            else
-            {
-                //matchline structure is present, but empty
-                if (selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").IsEmpty)
-                {
-                    VMATTBIautoPlan.confirmUI CUI = new VMATTBIautoPlan.confirmUI();
-                    CUI.message.Text = "I found a matchline structure in the structure set, but it's empty!" + Environment.NewLine + Environment.NewLine + "Do you want to continue without using the matchline structure?!";
-                    CUI.ShowDialog();
-                    if (!CUI.confirm) return true;
-
-                    //continue and ignore the empty matchline structure (same calculation as VMAT only)
-                    numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
-                    if (numIsos > 4) numIsos = numVMATIsos = 4;
-                }
-                //matchline structure is present and not empty
-                else
-                {
-                    //get number of isos for PTV superior to matchplane (always truncate this value to a maximum of 4 isocenters)
-                    numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z) / (400.0 - 20.0));
-                    if (numVMATIsos > 4) numVMATIsos = 4;
-
-                    //get number of iso for PTV inferior to matchplane
-                    //if (selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - pts.Min(p => p.Z) - 3.0 <= (400.0 - 20.0)) numIsos = numVMATIsos + 1;
-
-                    //5-20-2020 Nataliya said to only add a second legs iso if the extent of the TS_PTV_LEGS is > 40.0 cm
-                    if (selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - pts.Min(p => p.Z) - 3.0 <= (400.0 - 0.0)) extraIsos = 1;
-                    else extraIsos = 2;
-                    if (!allVMAT) numIsos = numVMATIsos + extraIsos;
-                    else { numVMATIsos += extraIsos; numIsos = numVMATIsos; }
-                    //MessageBox.Show(String.Format("{0}", selectedSS.Structures.First(x => x.Id.ToLower() == "matchline").CenterPoint.z - pts.Min(p => p.Z) - 3.0));
-                }
-            }
+            numIsos = numVMATIsos = (int)Math.Ceiling((pts.Max(p => p.Z) - pts.Min(p => p.Z)) / (400.0 - 20.0));
+            
 
             //set isocenter names based on numIsos and numVMATIsos (determined these names from prior cases). Need to implement a more clever way to name the isocenters
-            isoNames = new List<string>(new isoNameHelper().getIsoNames(numVMATIsos, numIsos));
+            isoNames = IsoNameHelper.GetIsoNames(numVMATIsos, numIsos);
 
             //check if selected structures are empty or of high-resolution (i.e., no operations can be performed on high-resolution structures)
             string output = "The following structures are high-resolution:" + System.Environment.NewLine;
@@ -224,7 +180,7 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        private bool createTSStructures()
+        private bool CreateTSStructures()
         {
             if(RemoveOldTSStructures(TS_structures)) return true;
 
@@ -448,7 +404,7 @@ namespace VMATTBIautoPlan
             return false;
         }
 
-        private bool createFlash()
+        private bool CreateFlash()
         {
             //create flash for the plan per the users request
             //NOTE: IT IS IMPORTANT THAT ALL OF THE STRUCTURES CREATED IN THIS METHOD (I.E., ALL STRUCTURES USED TO GENERATE FLASH HAVE THE KEYWORD 'FLASH' SOMEWHERE IN THE STRUCTURE ID)!

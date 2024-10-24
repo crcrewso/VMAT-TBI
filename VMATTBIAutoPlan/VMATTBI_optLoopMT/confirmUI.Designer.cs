@@ -1,4 +1,10 @@
-﻿namespace VMATTBI_optLoop
+﻿// This file is used by Code Analysis to maintain SuppressMessage
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given
+// a specific target and scoped to a namespace, type, member, etc.
+
+
+namespace VMATTBI_optLoop
 {
     partial class confirmUI
     {
@@ -41,7 +47,7 @@
             this.button1.TabIndex = 0;
             this.button1.Text = "Cancel";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.cancel_Click);
+            this.button1.Click += new System.EventHandler(this.Cancel_Click);
             // 
             // button2
             // 
@@ -52,7 +58,7 @@
             this.button2.TabIndex = 1;
             this.button2.Text = "Confirm";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.confirm_Click);
+            this.button2.Click += new System.EventHandler(this.Confirm_Click);
             // 
             // message
             // 
