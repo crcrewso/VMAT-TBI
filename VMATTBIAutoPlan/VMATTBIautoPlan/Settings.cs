@@ -46,7 +46,7 @@ namespace VMATTBIautoPlan
         public readonly List<string> Linacs = new List<string> { "TrueBeam1CC", "Mirage", "Solstice" };
         public readonly List<string> BeamEnergies = new List<string> { "6X", "10X" };
         //default number of beams per isocenter from head to toe
-        public readonly int[] BeamsPerIso = { 3, 4, 4, 2, 2, 2, 2 };
+        public readonly int[] BeamsPerIso = { 4, 3, 3, 3, 2, 2, 2 };
         //collimator rotations for how to orient the beams (placeBeams class)
         public readonly double[] TopCollRot = { 3.0, 357.0, 87.0, 93.0, 45.0, 315.0 };
         public readonly double[] BottomCollRot = { 175.0, 185.0, 135.0, 225.0 };
@@ -209,7 +209,7 @@ namespace VMATTBIautoPlan
 
         readonly List<Tuple<string, string, double>> defaultSpareStruct = new List<Tuple<string, string, double>>
         {
-            new Tuple<string, string, double>("Lungs", "Mean Dose < Rx Dose", 0.3),
+            new Tuple<string, string, double>("Lungs", "Mean Dose < Rx Dose", -0.4),
             new Tuple<string, string, double>("Kidneys", "Mean Dose < Rx Dose", 0.0),
             new Tuple<string, string, double>("Bowel", "Dmax ~ Rx Dose", 0.0)
         };

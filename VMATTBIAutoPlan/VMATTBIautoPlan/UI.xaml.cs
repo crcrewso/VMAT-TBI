@@ -1594,12 +1594,9 @@ namespace VMATTBIautoPlan
             separateTB.Background = System.Windows.Media.Brushes.ForestGreen;
             separateTB.Text = "YES";
 
-            //if flash was removed, display the calculate dose button (to remove flash, the script had to wipe the dose in the original plan)
-            if (prep.flashRemoved)
-            {
                 calcDose.Visibility = Visibility.Visible;
                 calcDoseTB.Visibility = Visibility.Visible;
-            }
+            
         }
 
         private void CalcDose_Click(object sender, RoutedEventArgs e)
@@ -1626,6 +1623,8 @@ namespace VMATTBIautoPlan
             //let the user know this step has been completed
             calcDoseTB.Background = System.Windows.Media.Brushes.ForestGreen;
             calcDoseTB.Text = "YES";
+
+            MessageBox.Show("Dose Calculations of separated plans are complete");
         }
 
         private void PlanSum_Click(object sender, RoutedEventArgs e)

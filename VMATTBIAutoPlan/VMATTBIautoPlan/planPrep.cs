@@ -239,7 +239,9 @@ namespace VMATTBIautoPlan
             }
 
             //check if flash was used in the plan. If so, ask the user if they want to remove these structures as part of cleanup
-            if (CheckForFlash())
+            //if (CheckForFlash())
+            // HACK so the user isn't asked if they want flash structures removed. This is a bad design. Current Clinical practice is to set HU = -1000 for flash structures
+            if (false)
             {
                 confirmUI CUI = new VMATTBIautoPlan.confirmUI();
                 CUI.message.Text = "I found some structures in the structure set for generating flash." + Environment.NewLine + Environment.NewLine + "Do you want me to remove them?!";
