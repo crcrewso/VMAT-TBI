@@ -23,11 +23,12 @@ def main():
     # Create a copy of the original file
     flippedPlan = copy.deepcopy(referencePlan)
     # Modify the copy name to indicate it's been reversed
-    flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel + "-Reversed"
     flippedPlan.SOPInstanceUID = pydicom.uid.generate_uid()
     # Plan name safety, if the plan name is too long it will be cut
-    if (len(flippedPlan.RTPlanLabel) > 15):
-        flippedPlan.RTPlanLabel = referencePlan.RTPlanLabel[0:10] + "-Rev"
+    tempName = referencePlan.RTPlanLabel + "-Reversed"
+    if (len(tempName) > 15):
+        tempName = referencePlan.RTPlanLabel[0:10] + "-Rev"
+    flippedPlan.RTPlanName = tempName
 
     orientation = flippedPlan[0x300A,0x0180].value
     for i in range(len(orientation)):
