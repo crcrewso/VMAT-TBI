@@ -8,15 +8,16 @@ from gooey import Gooey, GooeyParser
 
 @Gooey
 def main():
-    default_dir = "S:/Physics/"
+    default_dir = "S:/Physics/Temp/"
     if (os.path.exists(default_dir) == False):
         default_dir = os.getcwd()
-    parser = GooeyParser(description='Gantry Flip')
+    parser = GooeyParser(description='Gantry Flip v2')
     parser.add_argument('InputFile', widget='FileChooser', help='Select the DICOM file you want to flip', 
                         gooey_options={'wildcard': "DICOM Files (*.dcm)|*.dcm", 'default_dir': default_dir})
     args = parser.parse_args()
     sourceFile = args.InputFile
     saveFile = sourceFile.replace('.dcm', '-Flipped-ffs.dcm')
+    print('Starting to work on: ' + sourceFile)
     filename = os.path.basename(sourceFile)
     path = os.path.dirname(sourceFile)
     referencePlan = pydicom.dcmread(sourceFile)
@@ -26,6 +27,7 @@ def main():
     flippedPlan.SOPInstanceUID = pydicom.uid.generate_uid()
     # Plan name safety, if the plan name is too long it will be cut
     tempName = referencePlan.RTPlanLabel + "-Reversed"
+
     if (len(tempName) > 15):
         tempName = referencePlan.RTPlanLabel[0:10] + "-Rev"
     flippedPlan.RTPlanName = tempName
